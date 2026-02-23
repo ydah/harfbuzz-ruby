@@ -15,6 +15,12 @@ require_relative "harfbuzz/c/buffer"
 require_relative "harfbuzz/c/face"
 require_relative "harfbuzz/c/font"
 require_relative "harfbuzz/c/shape"
+require_relative "harfbuzz/c/map"
+require_relative "harfbuzz/c/set"
+require_relative "harfbuzz/c/shape_plan"
+require_relative "harfbuzz/c/unicode"
+require_relative "harfbuzz/c/draw"
+require_relative "harfbuzz/c/paint"
 
 # Load high-level Ruby layer
 require_relative "harfbuzz/glyph_info"
@@ -25,6 +31,12 @@ require_relative "harfbuzz/blob"
 require_relative "harfbuzz/buffer"
 require_relative "harfbuzz/face"
 require_relative "harfbuzz/font"
+require_relative "harfbuzz/map"
+require_relative "harfbuzz/set"
+require_relative "harfbuzz/shape_plan"
+require_relative "harfbuzz/unicode_funcs"
+require_relative "harfbuzz/draw_funcs"
+require_relative "harfbuzz/paint_funcs"
 
 # HarfBuzz Ruby FFI Bindings
 #
