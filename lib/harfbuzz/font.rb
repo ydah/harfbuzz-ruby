@@ -15,6 +15,16 @@ module HarfBuzz
       register_finalizer
     end
 
+    # Attaches a FontFuncs callback table to this font
+    # @param funcs [FontFuncs] Font funcs object (should be immutable)
+    # @param font_data [FFI::Pointer] User data pointer passed to callbacks (optional)
+    # @return [self]
+    def set_funcs(funcs, font_data: FFI::Pointer::NULL)
+      C.hb_font_set_funcs(@ptr, funcs.ptr, font_data, nil)
+      @funcs = funcs  # keep alive
+      self
+    end
+
     # Creates a sub-font of this font
     # @return [Font]
     def create_sub_font
