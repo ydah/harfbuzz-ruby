@@ -81,15 +81,14 @@ module HarfBuzz
 
     # @return [Array<Integer>] Array of table tags
     def table_tags
-      # First call to get count
+      # First call: pass count=0 to get total number of tables (return value)
       count_ptr = FFI::MemoryPointer.new(:uint)
       count_ptr.write_uint(0)
-      C.hb_face_get_table_tags(@ptr, 0, count_ptr, nil)
-      count = count_ptr.read_uint
-      return [] if count.zero?
+      total = C.hb_face_get_table_tags(@ptr, 0, count_ptr, nil)
+      return [] if total.zero?
 
-      tags_ptr = FFI::MemoryPointer.new(:uint32, count)
-      count_ptr.write_uint(count)
+      tags_ptr = FFI::MemoryPointer.new(:uint32, total)
+      count_ptr.write_uint(total)
       C.hb_face_get_table_tags(@ptr, 0, count_ptr, tags_ptr)
       actual = count_ptr.read_uint
       tags_ptr.read_array_of_uint32(actual)
@@ -102,6 +101,8 @@ module HarfBuzz
       ptr = C.hb_face_reference_table(@ptr, tag)
       Blob.wrap_owned(ptr)
     end
+
+    alias reference_table table
 
     # Returns the blob for the entire font face
     # @return [Blob] Face blob (owned)

@@ -240,5 +240,5 @@ module HarfBuzz
   private_class_method :build_features_ptr
 end
 
-# Alias for compatibility
-Harfbuzz = HarfBuzz
+# Alias for compatibility (Harfbuzz::VERSION was previously defined here)
+Harfbuzz = HarfBuzz unless defined?(Harfbuzz)

@@ -4,7 +4,7 @@ require_relative "lib/harfbuzz/version"
 
 Gem::Specification.new do |spec|
   spec.name = "harfbuzz-ruby"
-  spec.version = Harfbuzz::VERSION
+  spec.version = HarfBuzz::VERSION
   spec.authors = ["Yudai Takada"]
   spec.email = ["t.yudai92@gmail.com"]
 

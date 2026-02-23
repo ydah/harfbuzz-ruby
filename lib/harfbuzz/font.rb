@@ -305,6 +305,17 @@ module HarfBuzz
       ok.zero? ? nil : glyph_ptr.read_uint32
     end
 
+    # Returns glyph advance for a direction as [x, y]
+    # @param glyph [Integer] Glyph ID
+    # @param dir [Symbol] Direction (:ltr, :rtl, :ttb, :btt)
+    # @return [Array<Integer>] [x_advance, y_advance]
+    def glyph_advance_for_direction(glyph, dir)
+      x_ptr = FFI::MemoryPointer.new(:int32)
+      y_ptr = FFI::MemoryPointer.new(:int32)
+      C.hb_font_get_glyph_advance_for_direction(@ptr, glyph, dir, x_ptr, y_ptr)
+      [x_ptr.read_int32, y_ptr.read_int32]
+    end
+
     # Returns font extents for a direction
     # @param dir [Symbol] Direction (:ltr, :rtl, :ttb, :btt)
     # @return [C::HbFontExtentsT]

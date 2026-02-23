@@ -48,6 +48,8 @@ module HarfBuzz
 
     attach_function :hb_font_get_glyph_h_advance, [:hb_font_t, :hb_codepoint_t], :hb_position_t
     attach_function :hb_font_get_glyph_v_advance, [:hb_font_t, :hb_codepoint_t], :hb_position_t
+    attach_function :hb_font_get_glyph_advance_for_direction,
+      [:hb_font_t, :hb_codepoint_t, :hb_direction_t, :pointer, :pointer], :void
     attach_function :hb_font_get_glyph_h_advances,
       [:hb_font_t, :uint, :pointer, :uint, :pointer, :uint], :void
     attach_function :hb_font_get_glyph_v_advances,
