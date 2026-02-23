@@ -30,6 +30,7 @@ require_relative "harfbuzz/c/ot/metrics"
 require_relative "harfbuzz/c/ot/name"
 require_relative "harfbuzz/c/ot/shape"
 require_relative "harfbuzz/c/ot/font"
+require_relative "harfbuzz/c/aat/layout"
 
 # Load high-level Ruby layer
 require_relative "harfbuzz/glyph_info"
@@ -60,6 +61,16 @@ require_relative "harfbuzz/ot/metrics"
 require_relative "harfbuzz/ot/name"
 require_relative "harfbuzz/ot/shape"
 require_relative "harfbuzz/ot/font"
+
+# AAT namespace
+module HarfBuzz
+  module AAT; end
+end
+require_relative "harfbuzz/aat/layout"
+
+# Subset (loads libharfbuzz-subset if available)
+require_relative "harfbuzz/c/subset"
+require_relative "harfbuzz/subset"
 
 # HarfBuzz Ruby FFI Bindings
 #
