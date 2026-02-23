@@ -21,6 +21,15 @@ require_relative "harfbuzz/c/shape_plan"
 require_relative "harfbuzz/c/unicode"
 require_relative "harfbuzz/c/draw"
 require_relative "harfbuzz/c/paint"
+require_relative "harfbuzz/c/ot/layout"
+require_relative "harfbuzz/c/ot/var"
+require_relative "harfbuzz/c/ot/color"
+require_relative "harfbuzz/c/ot/math"
+require_relative "harfbuzz/c/ot/meta"
+require_relative "harfbuzz/c/ot/metrics"
+require_relative "harfbuzz/c/ot/name"
+require_relative "harfbuzz/c/ot/shape"
+require_relative "harfbuzz/c/ot/font"
 
 # Load high-level Ruby layer
 require_relative "harfbuzz/glyph_info"
@@ -37,6 +46,20 @@ require_relative "harfbuzz/shape_plan"
 require_relative "harfbuzz/unicode_funcs"
 require_relative "harfbuzz/draw_funcs"
 require_relative "harfbuzz/paint_funcs"
+
+# OT namespace
+module HarfBuzz
+  module OT; end
+end
+require_relative "harfbuzz/ot/layout"
+require_relative "harfbuzz/ot/var"
+require_relative "harfbuzz/ot/color"
+require_relative "harfbuzz/ot/math"
+require_relative "harfbuzz/ot/meta"
+require_relative "harfbuzz/ot/metrics"
+require_relative "harfbuzz/ot/name"
+require_relative "harfbuzz/ot/shape"
+require_relative "harfbuzz/ot/font"
 
 # HarfBuzz Ruby FFI Bindings
 #
