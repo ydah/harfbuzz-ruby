@@ -47,6 +47,7 @@ require_relative "harfbuzz/shape_plan"
 require_relative "harfbuzz/unicode_funcs"
 require_relative "harfbuzz/draw_funcs"
 require_relative "harfbuzz/paint_funcs"
+require_relative "harfbuzz/shaping_result"
 
 # OT namespace
 module HarfBuzz
@@ -190,6 +191,40 @@ module HarfBuzz
       i += 1
     end
     result
+  end
+
+  # High-level shaping convenience method
+  #
+  # @param text [String] Text to shape
+  # @param font_path [String] Path to font file
+  # @param features [Array<Feature, String>, Hash] Features to apply
+  # @param direction [Symbol, nil] Text direction (:ltr, :rtl, etc.)
+  # @param script [Integer, nil] Script value
+  # @param language [String, nil] BCP 47 language tag (e.g., "en")
+  # @return [ShapingResult]
+  def self.shape_text(text, font_path:, features: [], direction: nil, script: nil, language: nil)
+    blob = Blob.from_file!(font_path)
+    face = Face.new(blob, 0)
+    font = Font.new(face)
+
+    buffer = Buffer.new
+    buffer.add_utf8(text)
+    buffer.direction = direction if direction
+    buffer.script = script if script
+    buffer.language = self.language(language) if language
+    buffer.guess_segment_properties
+
+    parsed_features = case features
+                      when Array
+                        features.map { |f| f.is_a?(Feature) ? f : Feature.from_string(f.to_s) }
+                      when Hash
+                        Feature.from_hash(features)
+                      else
+                        []
+                      end
+
+    shape(font, buffer, parsed_features)
+    ShapingResult.new(buffer: buffer, font: font)
   end
 
   def self.build_features_ptr(features)
