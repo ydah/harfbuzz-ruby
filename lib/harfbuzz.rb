@@ -154,6 +154,14 @@ module HarfBuzz
     C.hb_language_get_default
   end
 
+  # Checks if two language tags match (BCP 47 prefix comparison)
+  # @param lang1 [FFI::Pointer] First language pointer
+  # @param lang2 [FFI::Pointer] Second language pointer
+  # @return [Boolean] true if languages match
+  def self.language_matches?(lang1, lang2)
+    C.from_hb_bool(C.hb_language_matches(lang1, lang2))
+  end
+
   # Converts a script name string to a script value
   # @param str [String] Script name (e.g., "Arab", "Latn")
   # @return [Integer] Script value

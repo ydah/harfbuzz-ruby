@@ -10,13 +10,23 @@ module HarfBuzz
     # @param props [C::HbSegmentPropertiesT] Segment properties
     # @param features [Array<Feature>] Features
     # @param shapers [Array<String>, nil] Shaper list
+    # @param coords [Array<Integer>, nil] Normalized variation coordinates (nil = none)
     # @return [ShapePlan]
-    def self.new(face, props, features = [], shapers: nil)
+    def self.new(face, props, features = [], shapers: nil, coords: nil)
       features_ptr = HarfBuzz.send(:build_features_ptr, features)
       shapers_ptr = build_shapers_ptr(shapers)
-      ptr = C.hb_shape_plan_create(
-        face.ptr, props, features_ptr, features.size, shapers_ptr
-      )
+      if coords
+        coords_ptr = FFI::MemoryPointer.new(:int32, coords.size)
+        coords_ptr.put_array_of_int32(0, coords)
+        ptr = C.hb_shape_plan_create2(
+          face.ptr, props, features_ptr, features.size,
+          shapers_ptr, coords.size, coords_ptr
+        )
+      else
+        ptr = C.hb_shape_plan_create(
+          face.ptr, props, features_ptr, features.size, shapers_ptr
+        )
+      end
       wrap_owned(ptr)
     end
 
@@ -25,13 +35,23 @@ module HarfBuzz
     # @param props [C::HbSegmentPropertiesT] Segment properties
     # @param features [Array<Feature>] Features
     # @param shapers [Array<String>, nil] Shaper list
+    # @param coords [Array<Integer>, nil] Normalized variation coordinates (nil = none)
     # @return [ShapePlan]
-    def self.cached(face, props, features = [], shapers: nil)
+    def self.cached(face, props, features = [], shapers: nil, coords: nil)
       features_ptr = HarfBuzz.send(:build_features_ptr, features)
       shapers_ptr = build_shapers_ptr(shapers)
-      ptr = C.hb_shape_plan_create_cached(
-        face.ptr, props, features_ptr, features.size, shapers_ptr
-      )
+      if coords
+        coords_ptr = FFI::MemoryPointer.new(:int32, coords.size)
+        coords_ptr.put_array_of_int32(0, coords)
+        ptr = C.hb_shape_plan_create_cached2(
+          face.ptr, props, features_ptr, features.size,
+          shapers_ptr, coords.size, coords_ptr
+        )
+      else
+        ptr = C.hb_shape_plan_create_cached(
+          face.ptr, props, features_ptr, features.size, shapers_ptr
+        )
+      end
       wrap_owned(ptr)
     end
 
