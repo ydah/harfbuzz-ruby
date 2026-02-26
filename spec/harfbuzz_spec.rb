@@ -92,6 +92,24 @@ RSpec.describe HarfBuzz do
     end
   end
 
+  describe ".color_alpha / .color_red / .color_green / .color_blue" do
+    it "extracts alpha" do
+      expect(HarfBuzz.color_alpha(0xFF000000)).to be_an(Integer)
+    end
+
+    it "extracts red" do
+      expect(HarfBuzz.color_red(0xFF0000FF)).to be_an(Integer)
+    end
+
+    it "extracts green" do
+      expect(HarfBuzz.color_green(0x00FF00FF)).to be_an(Integer)
+    end
+
+    it "extracts blue" do
+      expect(HarfBuzz.color_blue(0x0000FFFF)).to be_an(Integer)
+    end
+  end
+
   describe ".script_horizontal_direction" do
     it "returns :ltr for Latin script" do
       script = HarfBuzz.script("Latn")

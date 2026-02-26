@@ -168,6 +168,34 @@ module HarfBuzz
     C.hb_script_from_iso15924_tag(tag)
   end
 
+  # Extracts the alpha component from an RGBA color value
+  # @param color [Integer] RGBA color as uint32
+  # @return [Integer] Alpha (0-255)
+  def self.color_alpha(color)
+    C.hb_color_get_alpha(color)
+  end
+
+  # Extracts the red component from an RGBA color value
+  # @param color [Integer] RGBA color as uint32
+  # @return [Integer] Red (0-255)
+  def self.color_red(color)
+    C.hb_color_get_red(color)
+  end
+
+  # Extracts the green component from an RGBA color value
+  # @param color [Integer] RGBA color as uint32
+  # @return [Integer] Green (0-255)
+  def self.color_green(color)
+    C.hb_color_get_green(color)
+  end
+
+  # Extracts the blue component from an RGBA color value
+  # @param color [Integer] RGBA color as uint32
+  # @return [Integer] Blue (0-255)
+  def self.color_blue(color)
+    C.hb_color_get_blue(color)
+  end
+
   # Returns the horizontal direction for a script
   # @param script [Integer] Script value
   # @return [Symbol] Direction symbol (:ltr or :rtl)
