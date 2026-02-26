@@ -112,4 +112,111 @@ RSpec.describe HarfBuzz::Font do
       # We just check that the method doesn't raise
     end
   end
+
+  describe ".empty" do
+    it "returns the empty Font" do
+      expect(described_class.empty).to be_a(described_class)
+    end
+  end
+
+  describe "#create_sub_font" do
+    it "creates a sub-font inheriting from the parent" do
+      sub = font.create_sub_font
+      expect(sub).to be_a(described_class)
+    end
+  end
+
+  describe "#nominal_glyph" do
+    it "returns a glyph ID for 'A'" do
+      glyph = font.nominal_glyph(0x41)
+      expect(glyph).to be_an(Integer).or be_nil
+    end
+  end
+
+  describe "#nominal_glyphs" do
+    it "returns an array of glyph IDs" do
+      result = font.nominal_glyphs([0x41, 0x42, 0x43])
+      expect(result).to be_an(Array)
+      expect(result.size).to eq(3)
+      result.each { |g| expect(g).to be_an(Integer) }
+    end
+  end
+
+  describe "#variation_glyph" do
+    it "returns a glyph ID or nil for a codepoint+selector" do
+      glyph = font.variation_glyph(0x41, 0xFE0F)
+      expect(glyph).to be_an(Integer).or be_nil
+    end
+  end
+
+  describe "#glyph_h_advance" do
+    it "returns an integer advance for glyph 0" do
+      expect(font.glyph_h_advance(0)).to be_an(Integer)
+    end
+  end
+
+  describe "#glyph_v_advance" do
+    it "returns an integer advance" do
+      expect(font.glyph_v_advance(0)).to be_an(Integer)
+    end
+  end
+
+  describe "#glyph_h_advances" do
+    it "returns an array of advances" do
+      result = font.glyph_h_advances([0, 1, 2])
+      expect(result).to be_an(Array)
+      expect(result.size).to eq(3)
+      result.each { |a| expect(a).to be_an(Integer) }
+    end
+  end
+
+  describe "#glyph_v_advances" do
+    it "returns an array of advances" do
+      result = font.glyph_v_advances([0, 1, 2])
+      expect(result).to be_an(Array)
+      expect(result.size).to eq(3)
+    end
+  end
+
+  describe "#glyph_h_origin" do
+    it "returns [x, y] integers" do
+      result = font.glyph_h_origin(0)
+      expect(result).to be_an(Array)
+      expect(result.size).to eq(2)
+    end
+  end
+
+  describe "#glyph_v_origin" do
+    it "returns [x, y] integers" do
+      result = font.glyph_v_origin(0)
+      expect(result).to be_an(Array)
+      expect(result.size).to eq(2)
+    end
+  end
+
+  describe "#glyph_h_kerning" do
+    it "returns an integer kerning value" do
+      expect(font.glyph_h_kerning(0, 1)).to be_an(Integer)
+    end
+  end
+
+  describe "#glyph_extents" do
+    it "returns an HbGlyphExtentsT or nil" do
+      result = font.glyph_extents(0)
+      expect(result).to be_a(HarfBuzz::C::HbGlyphExtentsT).or be_nil
+    end
+  end
+
+  describe "#glyph_contour_point" do
+    it "returns [x, y] or nil" do
+      result = font.glyph_contour_point(0, 0)
+      expect(result).to be_an(Array).or be_nil
+    end
+  end
+
+  describe "#inspect" do
+    it "includes class name" do
+      expect(font.inspect).to include("HarfBuzz::Font")
+    end
+  end
 end
