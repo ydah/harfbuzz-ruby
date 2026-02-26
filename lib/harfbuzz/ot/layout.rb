@@ -315,10 +315,12 @@ module HarfBuzz
         tooltip_id_ptr     = FFI::MemoryPointer.new(:uint)
         sample_id_ptr      = FFI::MemoryPointer.new(:uint)
         num_params_ptr     = FFI::MemoryPointer.new(:uint)
+        first_param_id_ptr = FFI::MemoryPointer.new(:uint)
         found = C.from_hb_bool(
           C.hb_ot_layout_feature_get_name_ids(
             face.ptr, table_tag, feature_index,
-            label_id_ptr, tooltip_id_ptr, sample_id_ptr, num_params_ptr
+            label_id_ptr, tooltip_id_ptr, sample_id_ptr,
+            num_params_ptr, first_param_id_ptr
           )
         )
         return nil unless found
@@ -327,7 +329,8 @@ module HarfBuzz
           label_id: label_id_ptr.read_uint,
           tooltip_id: tooltip_id_ptr.read_uint,
           sample_id: sample_id_ptr.read_uint,
-          num_named_parameters: num_params_ptr.read_uint
+          num_named_parameters: num_params_ptr.read_uint,
+          first_param_id: first_param_id_ptr.read_uint
         }
       end
 

@@ -51,7 +51,7 @@ module HarfBuzz
     attach_function :hb_ot_layout_get_size_params,
       [:hb_face_t, :pointer, :pointer, :pointer, :pointer, :pointer], :hb_bool_t
     attach_function :hb_ot_layout_feature_get_name_ids,
-      [:hb_face_t, :hb_tag_t, :uint, :pointer, :pointer, :pointer, :pointer], :hb_bool_t
+      [:hb_face_t, :hb_tag_t, :uint, :pointer, :pointer, :pointer, :pointer, :pointer], :hb_bool_t
     attach_function :hb_ot_layout_feature_get_characters,
       [:hb_face_t, :hb_tag_t, :uint, :uint, :pointer, :pointer], :uint
 
