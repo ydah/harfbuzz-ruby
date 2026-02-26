@@ -39,5 +39,15 @@ RSpec.configure do |config|
         raise "No test font found"
       end
     end
+
+    # Returns current process RSS in kilobytes
+    def rss_kb
+      if RUBY_PLATFORM.include?("darwin")
+        `ps -o rss= -p #{Process.pid}`.strip.to_i
+      else
+        File.read("/proc/#{Process.pid}/status")
+            .match(/VmRSS:\s+(\d+)/i)&.captures&.first.to_i
+      end
+    end
   end)
 end
