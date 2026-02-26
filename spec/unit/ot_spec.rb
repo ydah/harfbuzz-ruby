@@ -236,6 +236,222 @@ RSpec.describe "HarfBuzz OpenType API" do
         expect(result.size).to eq(2)
       end
     end
+
+    describe ".tags_to_script_and_language" do
+      it "returns [script, language]" do
+        latn = HarfBuzz.tag("latn")
+        result = described_class.tags_to_script_and_language(latn, 0)
+        expect(result).to be_an(Array)
+        expect(result.size).to eq(2)
+      end
+    end
+
+    describe ".tag_to_script" do
+      it "returns an integer" do
+        latn = HarfBuzz.tag("latn")
+        result = described_class.tag_to_script(latn)
+        expect(result).to be_an(Integer)
+      end
+    end
+
+    describe ".tag_to_language" do
+      it "returns a pointer (or nil)" do
+        eng = HarfBuzz.tag("ENG ")
+        result = described_class.tag_to_language(eng)
+        # Returns a language pointer or nil
+        expect(result).to satisfy { |r| r.nil? || r.is_a?(FFI::Pointer) }
+      end
+    end
+
+    describe ".has_glyph_classes?" do
+      it "returns a boolean" do
+        result = described_class.has_glyph_classes?(face)
+        expect(result).to be(true).or be(false)
+      end
+    end
+
+    describe ".glyph_class" do
+      it "returns a symbol" do
+        result = described_class.glyph_class(face, 0)
+        expect(result).to be_a(Symbol)
+      end
+    end
+
+    describe ".glyphs_in_class" do
+      it "returns a Set" do
+        result = described_class.glyphs_in_class(face, :base_glyph)
+        expect(result).to be_a(HarfBuzz::Set)
+      end
+    end
+
+    describe ".feature_tags" do
+      it "returns an array of tag integers for GSUB" do
+        tags = described_class.feature_tags(face, gsub)
+        expect(tags).to be_an(Array)
+        tags.each { |t| expect(t).to be_an(Integer) }
+      end
+    end
+  end
+
+  describe HarfBuzz::OT::Color do
+    describe ".has_palettes?" do
+      it "returns a boolean" do
+        expect(described_class.has_palettes?(face)).to be(true).or be(false)
+      end
+    end
+
+    describe ".palette_count" do
+      it "returns an integer" do
+        expect(described_class.palette_count(face)).to be_an(Integer)
+      end
+    end
+
+    describe ".palette_name_id" do
+      it "returns an integer for palette 0" do
+        expect(described_class.palette_name_id(face, 0)).to be_an(Integer)
+      end
+    end
+
+    describe ".palette_color_name_id" do
+      it "returns an integer for index 0" do
+        expect(described_class.palette_color_name_id(face, 0)).to be_an(Integer)
+      end
+    end
+
+    describe ".palette_flags" do
+      it "returns an integer for palette 0" do
+        expect(described_class.palette_flags(face, 0)).to be_an(Integer)
+      end
+    end
+
+    describe ".palette_colors" do
+      it "returns an array for palette 0" do
+        expect(described_class.palette_colors(face, 0)).to be_an(Array)
+      end
+    end
+
+    describe ".has_layers?" do
+      it "returns a boolean" do
+        expect(described_class.has_layers?(face)).to be(true).or be(false)
+      end
+    end
+
+    describe ".glyph_layers" do
+      it "returns an array" do
+        expect(described_class.glyph_layers(face, 0)).to be_an(Array)
+      end
+    end
+
+    describe ".has_svg?" do
+      it "returns a boolean" do
+        expect(described_class.has_svg?(face)).to be(true).or be(false)
+      end
+    end
+
+    describe ".glyph_svg" do
+      it "returns a Blob" do
+        result = described_class.glyph_svg(face, 0)
+        expect(result).to be_a(HarfBuzz::Blob)
+      end
+    end
+
+    describe ".has_png?" do
+      it "returns a boolean" do
+        expect(described_class.has_png?(face)).to be(true).or be(false)
+      end
+    end
+
+    describe ".glyph_png" do
+      it "returns a Blob" do
+        result = described_class.glyph_png(font, 0)
+        expect(result).to be_a(HarfBuzz::Blob)
+      end
+    end
+
+    describe ".has_paint?" do
+      it "returns a boolean" do
+        expect(described_class.has_paint?(face)).to be(true).or be(false)
+      end
+    end
+  end
+
+  describe HarfBuzz::OT::Math do
+    describe ".has_data?" do
+      it "returns a boolean" do
+        expect(described_class.has_data?(face)).to be(true).or be(false)
+      end
+    end
+
+    describe ".constant" do
+      it "returns an integer" do
+        # HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN = 0
+        expect(described_class.constant(font, 0)).to be_an(Integer)
+      end
+    end
+
+    describe ".glyph_italics_correction" do
+      it "returns an integer" do
+        expect(described_class.glyph_italics_correction(font, 0)).to be_an(Integer)
+      end
+    end
+
+    describe ".glyph_top_accent_attachment" do
+      it "returns an integer" do
+        expect(described_class.glyph_top_accent_attachment(font, 0)).to be_an(Integer)
+      end
+    end
+
+    describe ".glyph_extended_shape?" do
+      it "returns a boolean" do
+        expect(described_class.glyph_extended_shape?(face, 0)).to be(true).or be(false)
+      end
+    end
+
+    describe ".glyph_kerning" do
+      it "returns an integer" do
+        # HB_OT_MATH_KERN_TOP_RIGHT = 0
+        expect(described_class.glyph_kerning(font, 0, 0, 0)).to be_an(Integer)
+      end
+    end
+
+    describe ".glyph_variants" do
+      it "returns an array" do
+        expect(described_class.glyph_variants(font, 0, :ltr)).to be_an(Array)
+      end
+    end
+
+    describe ".glyph_assembly" do
+      it "returns a Hash" do
+        expect(described_class.glyph_assembly(font, 0, :ltr)).to be_a(Hash)
+      end
+    end
+
+    describe ".min_connector_overlap" do
+      it "returns an integer" do
+        expect(described_class.min_connector_overlap(font, :ltr)).to be_an(Integer)
+      end
+    end
+  end
+
+  describe HarfBuzz::OT::Meta do
+    describe ".entry_tags" do
+      it "returns an array" do
+        expect(described_class.entry_tags(face)).to be_an(Array)
+      end
+    end
+
+    describe ".entry" do
+      it "returns a Blob for a known tag or nil" do
+        tags = described_class.entry_tags(face)
+        if tags.any?
+          result = described_class.entry(face, tags.first)
+          expect(result).to be_a(HarfBuzz::Blob).or be_nil
+        else
+          result = described_class.entry(face, HarfBuzz.tag("dlng"))
+          expect(result).to be_a(HarfBuzz::Blob).or be_nil
+        end
+      end
+    end
   end
 
   describe HarfBuzz::OT::Metrics do
@@ -255,6 +471,27 @@ RSpec.describe "HarfBuzz OpenType API" do
         expect(val).to be_an(Integer)
       end
     end
+
+    describe ".variation" do
+      it "returns a float or nil" do
+        val = described_class.variation(font, x_height_tag)
+        expect(val).to be_a(Float).or be_nil
+      end
+    end
+
+    describe ".x_variation" do
+      it "returns an integer" do
+        val = described_class.x_variation(font, x_height_tag)
+        expect(val).to be_an(Integer)
+      end
+    end
+
+    describe ".y_variation" do
+      it "returns an integer" do
+        val = described_class.y_variation(font, x_height_tag)
+        expect(val).to be_an(Integer)
+      end
+    end
   end
 
   describe HarfBuzz::OT::Name do
@@ -264,13 +501,120 @@ RSpec.describe "HarfBuzz OpenType API" do
         expect(names).to be_an(Array)
       end
     end
+
+    describe ".get_utf8" do
+      it "returns a string or nil for name ID 1 (family name)" do
+        lang = HarfBuzz.default_language
+        result = described_class.get_utf8(face, 1, lang)
+        expect(result).to be_a(String).or be_nil
+      end
+    end
+
+    describe ".get_utf16" do
+      it "returns a string or nil for name ID 1" do
+        lang = HarfBuzz.default_language
+        result = described_class.get_utf16(face, 1, lang)
+        expect(result).to be_a(String).or be_nil
+      end
+    end
+
+    describe ".get_utf32" do
+      it "returns a string or nil for name ID 1" do
+        lang = HarfBuzz.default_language
+        result = described_class.get_utf32(face, 1, lang)
+        expect(result).to be_a(String).or be_nil
+      end
+    end
   end
 
   describe HarfBuzz::OT::Var do
+    describe ".has_data?" do
+      it "returns a boolean" do
+        expect(described_class.has_data?(face)).to be(true).or be(false)
+      end
+    end
+
     describe ".axis_count" do
       it "returns an integer" do
         count = described_class.axis_count(face)
         expect(count).to be_an(Integer)
+      end
+    end
+
+    describe ".axis_infos" do
+      it "returns an array" do
+        result = described_class.axis_infos(face)
+        expect(result).to be_an(Array)
+      end
+    end
+
+    describe ".find_axis_info" do
+      it "returns a Hash or nil for wght axis" do
+        wght = HarfBuzz.tag("wght")
+        result = described_class.find_axis_info(face, wght)
+        expect(result).to be_a(Hash).or be_nil
+      end
+    end
+
+    describe ".named_instance_count" do
+      it "returns an integer" do
+        expect(described_class.named_instance_count(face)).to be_an(Integer)
+      end
+    end
+
+    describe ".named_instance_subfamily_name_id" do
+      it "returns an integer for instance 0" do
+        expect(described_class.named_instance_subfamily_name_id(face, 0)).to be_an(Integer)
+      end
+    end
+
+    describe ".named_instance_postscript_name_id" do
+      it "returns an integer for instance 0" do
+        expect(described_class.named_instance_postscript_name_id(face, 0)).to be_an(Integer)
+      end
+    end
+
+    describe ".named_instance_design_coords" do
+      it "returns an array for instance 0" do
+        expect(described_class.named_instance_design_coords(face, 0)).to be_an(Array)
+      end
+    end
+
+    describe ".normalize_variations" do
+      it "returns an array" do
+        var = HarfBuzz::Variation.from_string("wght=400")
+        result = described_class.normalize_variations(face, [var])
+        expect(result).to be_an(Array)
+      end
+    end
+
+    describe ".normalize_coords" do
+      it "returns an array" do
+        result = described_class.normalize_coords(face, [400.0])
+        expect(result).to be_an(Array)
+      end
+    end
+  end
+
+  describe HarfBuzz::OT::Shape do
+    describe ".glyphs_closure" do
+      it "returns a Set" do
+        buffer = HarfBuzz::Buffer.new
+        buffer.add_utf8("Hi")
+        buffer.guess_segment_properties
+        result = described_class.glyphs_closure(font, buffer, [])
+        expect(result).to be_a(HarfBuzz::Set)
+      end
+    end
+
+    describe ".plan_collect_lookups" do
+      it "returns a Set" do
+        buffer = HarfBuzz::Buffer.new
+        buffer.add_utf8("Hi")
+        buffer.guess_segment_properties
+        plan = HarfBuzz::ShapePlan.new(face, buffer.segment_properties)
+        result = described_class.plan_collect_lookups(plan, HarfBuzz.tag("GSUB"))
+        expect(result).to be_a(HarfBuzz::Set)
       end
     end
   end
