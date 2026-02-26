@@ -203,6 +203,20 @@ module HarfBuzz
       ok.zero? ? nil : glyph_ptr.read_uint32
     end
 
+    # Returns nominal glyph IDs for multiple codepoints in a single call
+    # @param codepoints [Array<Integer>] Unicode codepoints
+    # @return [Array<Integer>] Glyph IDs (0 for unmapped codepoints)
+    def nominal_glyphs(codepoints)
+      count = codepoints.size
+      return [] if count.zero?
+
+      cp_ptr = FFI::MemoryPointer.new(:uint32, count)
+      cp_ptr.put_array_of_uint32(0, codepoints)
+      glyph_ptr = FFI::MemoryPointer.new(:uint32, count)
+      C.hb_font_get_nominal_glyphs(@ptr, count, cp_ptr, 4, glyph_ptr, 4)
+      glyph_ptr.read_array_of_uint32(count)
+    end
+
     # Returns glyph ID for a variation sequence
     # @param cp [Integer] Unicode codepoint
     # @param selector [Integer] Variation selector
@@ -340,6 +354,15 @@ module HarfBuzz
     # @param draw_funcs [DrawFuncs] Draw callbacks object
     def draw_glyph(glyph, draw_funcs)
       C.hb_font_draw_glyph(@ptr, glyph, draw_funcs.ptr, nil)
+    end
+
+    # Paints a glyph using PaintFuncs callbacks
+    # @param glyph [Integer] Glyph ID
+    # @param paint_funcs [PaintFuncs] Paint callbacks object
+    # @param palette_index [Integer] Color palette index (default 0)
+    # @param foreground [Integer] Foreground color as RGBA uint32 (default 0xFF000000)
+    def paint_glyph(glyph, paint_funcs, palette_index: 0, foreground: 0xFF000000)
+      C.hb_font_paint_glyph(@ptr, glyph, paint_funcs.ptr, nil, palette_index, foreground)
     end
 
     def inspect
