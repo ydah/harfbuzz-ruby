@@ -72,6 +72,34 @@ module HarfBuzz
         end
       end
 
+      # Returns math glyph assembly (extensible glyph parts)
+      # @param font [Font] Sized font
+      # @param glyph [Integer] Glyph ID
+      # @param dir [Symbol] Direction
+      # @return [Hash] { parts: Array<C::HbOtMathGlyphPartT>, italics_correction: Integer }
+      def glyph_assembly(font, glyph, dir)
+        count_ptr = FFI::MemoryPointer.new(:uint)
+        count_ptr.write_uint(0)
+        italics_ptr = FFI::MemoryPointer.new(:int32)
+        total = C.hb_ot_math_get_glyph_assembly(
+          font.ptr, glyph, dir, 0, count_ptr, nil, italics_ptr
+        )
+        parts = if total.zero?
+                  []
+                else
+                  parts_ptr = FFI::MemoryPointer.new(C::HbOtMathGlyphPartT, total)
+                  count_ptr.write_uint(total)
+                  C.hb_ot_math_get_glyph_assembly(
+                    font.ptr, glyph, dir, 0, count_ptr, parts_ptr, italics_ptr
+                  )
+                  actual = count_ptr.read_uint
+                  actual.times.map do |i|
+                    C::HbOtMathGlyphPartT.new(parts_ptr + i * C::HbOtMathGlyphPartT.size)
+                  end
+                end
+        { parts: parts, italics_correction: italics_ptr.read_int32 }
+      end
+
       # @param font [Font] Sized font
       # @param dir [Symbol] Direction
       # @return [Integer] Minimum connector overlap in font units

@@ -185,6 +185,18 @@ module HarfBuzz
       C.hb_buffer_set_unicode_funcs(@ptr, ufuncs.ptr)
     end
 
+    # @return [C::HbSegmentPropertiesT] Segment properties struct
+    def segment_properties
+      props = C::HbSegmentPropertiesT.new
+      C.hb_buffer_get_segment_properties(@ptr, props.to_ptr)
+      props
+    end
+
+    # @param props [C::HbSegmentPropertiesT] Segment properties struct
+    def segment_properties=(props)
+      C.hb_buffer_set_segment_properties(@ptr, props.to_ptr)
+    end
+
     # Guesses direction/script/language from buffer contents
     # @return [self]
     def guess_segment_properties
@@ -399,6 +411,36 @@ module HarfBuzz
 
     def inspect
       "#<HarfBuzz::Buffer length=#{length} direction=#{direction} content_type=#{content_type}>"
+    end
+
+    # Converts a format string to a serialize format symbol
+    # @param str [String] Format name (e.g., "text", "json")
+    # @return [Symbol] Format symbol
+    def self.serialize_format(str)
+      C.hb_buffer_serialize_format_from_string(str, str.bytesize)
+    end
+
+    # Converts a serialize format symbol to a string
+    # @param fmt [Symbol] Format symbol
+    # @return [String] Format name
+    def self.serialize_format_name(fmt)
+      C.hb_buffer_serialize_format_to_string(fmt)
+    end
+
+    # Returns a list of available serialize format names
+    # @return [Array<String>] Format names
+    def self.serialize_formats
+      ptr = C.hb_buffer_serialize_list_formats
+      result = []
+      i = 0
+      loop do
+        p = ptr.get_pointer(i * FFI::Pointer.size)
+        break if p.null?
+
+        result << p.read_string
+        i += 1
+      end
+      result
     end
 
     def self.wrap_owned(ptr)
