@@ -103,4 +103,44 @@ RSpec.describe HarfBuzz::Face do
       expect(face.variation_unicodes(0xFE0E)).to be_a(HarfBuzz::Set)
     end
   end
+
+  describe ".empty" do
+    it "returns the empty Face" do
+      expect(described_class.empty).to be_a(described_class)
+    end
+  end
+
+  describe ".for_tables" do
+    it "creates a face from a block" do
+      # Delegate to original face's table lookup
+      result_face = described_class.for_tables do |tag|
+        face.table(tag)
+      end
+      expect(result_face).to be_a(described_class)
+    end
+  end
+
+  describe "#blob" do
+    it "returns a Blob" do
+      expect(face.blob).to be_a(HarfBuzz::Blob)
+    end
+  end
+
+  describe "#upem= / #glyph_count=" do
+    it "can override upem" do
+      face.upem = 2048
+      expect(face.upem).to eq(2048)
+    end
+
+    it "can override glyph_count" do
+      face.glyph_count = 100
+      expect(face.glyph_count).to eq(100)
+    end
+  end
+
+  describe "#inspect" do
+    it "includes class name" do
+      expect(face.inspect).to include("HarfBuzz::Face")
+    end
+  end
 end
