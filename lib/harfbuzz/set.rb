@@ -195,6 +195,18 @@ module HarfBuzz
       yield cp_ptr.read_uint32 while C.from_hb_bool(C.hb_set_next(@ptr, cp_ptr))
     end
 
+    # Iterates over contiguous ranges in ascending order
+    # @yield [first, last] First and last value of each range (inclusive)
+    def each_range
+      first_ptr = FFI::MemoryPointer.new(:uint32)
+      last_ptr  = FFI::MemoryPointer.new(:uint32)
+      first_ptr.write_uint32(HB_SET_VALUE_INVALID)
+      last_ptr.write_uint32(HB_SET_VALUE_INVALID)
+      while C.from_hb_bool(C.hb_set_next_range(@ptr, first_ptr, last_ptr))
+        yield first_ptr.read_uint32, last_ptr.read_uint32
+      end
+    end
+
     # Iterates over all values in descending order
     # @yield [value]
     def reverse_each
