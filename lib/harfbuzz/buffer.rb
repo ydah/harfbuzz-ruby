@@ -99,6 +99,19 @@ module HarfBuzz
       self
     end
 
+    # Adds Latin-1 (ISO-8859-1) text to the buffer
+    # @param text [String] Text to add (will be encoded as ISO-8859-1)
+    # @param item_offset [Integer] Offset into text (for cluster calculation)
+    # @param item_length [Integer] Length (-1 = full text)
+    # @return [self]
+    def add_latin1(text, item_offset: 0, item_length: -1)
+      encoded = text.encode("ISO-8859-1")
+      mem = FFI::MemoryPointer.new(:uint8, encoded.bytesize)
+      mem.put_bytes(0, encoded)
+      C.hb_buffer_add_latin1(@ptr, mem, encoded.bytesize, item_offset, item_length)
+      self
+    end
+
     # Adds an array of Unicode codepoints to the buffer
     # @param codepoints [Array<Integer>] Array of Unicode codepoints
     # @param item_offset [Integer] Offset
@@ -159,6 +172,17 @@ module HarfBuzz
     # @param lang [FFI::Pointer] Language pointer (use HarfBuzz.language("en"))
     def language=(lang)
       C.hb_buffer_set_language(@ptr, lang)
+    end
+
+    # @return [UnicodeFuncs] Unicode functions associated with this buffer
+    def unicode_funcs
+      ptr = C.hb_buffer_get_unicode_funcs(@ptr)
+      UnicodeFuncs.wrap_borrowed(ptr)
+    end
+
+    # @param ufuncs [UnicodeFuncs] Unicode functions to use for this buffer
+    def unicode_funcs=(ufuncs)
+      C.hb_buffer_set_unicode_funcs(@ptr, ufuncs.ptr)
     end
 
     # Guesses direction/script/language from buffer contents
@@ -299,6 +323,21 @@ module HarfBuzz
       self
     end
 
+    # Sets a message callback for debugging/tracing shaping
+    # @yield [message] Called with a debug message string
+    # @return [self]
+    def on_message(&block)
+      @message_callback = block
+      cb = FFI::Function.new(:int, [:pointer, :pointer, :string, :pointer]) do
+        |_buf_ptr, _font_ptr, message, _user_data|
+        block.call(message)
+        1
+      end
+      @message_ffi = cb
+      C.hb_buffer_set_message_func(@ptr, cb, nil, nil)
+      self
+    end
+
     # Computes difference flags between this buffer and another
     # @param other [Buffer] Buffer to compare against
     # @param dottedcircle_glyph [Integer] Dotted circle glyph ID
@@ -320,6 +359,42 @@ module HarfBuzz
       font_ptr = font ? font.ptr : FFI::Pointer::NULL
       C.hb_buffer_serialize_glyphs(@ptr, 0, length, buf, buf_size, written_ptr, font_ptr, format, flags)
       buf.read_string(written_ptr.read_uint)
+    end
+
+    # Serializes Unicode codepoints to a string representation
+    # @param format [Symbol] Serialize format (:text or :json), defaults to :text
+    # @param flags [Integer] Serialize flags (0 = default)
+    # @return [String] Serialized unicode data
+    def serialize_unicode(format: :text, flags: 0)
+      buf_size = 4096
+      buf = FFI::MemoryPointer.new(:char, buf_size)
+      written_ptr = FFI::MemoryPointer.new(:uint)
+      C.hb_buffer_serialize_unicode(@ptr, 0, length, buf, buf_size, written_ptr, format, flags)
+      buf.read_string(written_ptr.read_uint)
+    end
+
+    # Deserializes glyph data from a string into this buffer
+    # @param str [String] Serialized glyph data
+    # @param font [Font, nil] Font for glyph name resolution
+    # @param format [Symbol] Format (:text or :json), defaults to :text
+    # @return [Boolean] true if successful
+    def deserialize_glyphs(str, font: nil, format: :text)
+      font_ptr = font ? font.ptr : FFI::Pointer::NULL
+      end_ptr = FFI::MemoryPointer.new(:pointer)
+      C.from_hb_bool(
+        C.hb_buffer_deserialize_glyphs(@ptr, str, str.bytesize, end_ptr, font_ptr, format)
+      )
+    end
+
+    # Deserializes Unicode codepoints from a string into this buffer
+    # @param str [String] Serialized unicode data
+    # @param format [Symbol] Format (:text or :json), defaults to :text
+    # @return [Boolean] true if successful
+    def deserialize_unicode(str, format: :text)
+      end_ptr = FFI::MemoryPointer.new(:pointer)
+      C.from_hb_bool(
+        C.hb_buffer_deserialize_unicode(@ptr, str, str.bytesize, end_ptr, format)
+      )
     end
 
     def inspect

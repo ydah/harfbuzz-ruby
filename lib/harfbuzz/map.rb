@@ -100,6 +100,20 @@ module HarfBuzz
       C.from_hb_bool(C.hb_map_allocation_successful(@ptr))
     end
 
+    # @return [Set] Set of all keys
+    def keys
+      set = Set.new
+      C.hb_map_keys(@ptr, set.ptr)
+      set
+    end
+
+    # @return [Set] Set of all values
+    def values
+      set = Set.new
+      C.hb_map_values(@ptr, set.ptr)
+      set
+    end
+
     # Iterates over key-value pairs
     # @yield [key, value]
     def each

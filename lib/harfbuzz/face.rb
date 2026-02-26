@@ -111,6 +111,35 @@ module HarfBuzz
       Blob.wrap_owned(ptr)
     end
 
+    # @return [Set] Set of all Unicode codepoints in this face
+    def unicodes
+      set = Set.new
+      C.hb_face_collect_unicodes(@ptr, set.ptr)
+      set
+    end
+
+    # @return [Map] Map from Unicode codepoints to nominal glyph IDs
+    def nominal_glyph_mapping
+      map = Map.new
+      C.hb_face_collect_nominal_glyph_mapping(@ptr, map.ptr, FFI::Pointer::NULL)
+      map
+    end
+
+    # @return [Set] Set of variation selector codepoints
+    def variation_selectors
+      set = Set.new
+      C.hb_face_collect_variation_selectors(@ptr, set.ptr)
+      set
+    end
+
+    # @param selector [Integer] Variation selector codepoint
+    # @return [Set] Set of Unicode codepoints supported via the variation selector
+    def variation_unicodes(selector)
+      set = Set.new
+      C.hb_face_collect_variation_unicodes(@ptr, selector, set.ptr)
+      set
+    end
+
     # @return [Boolean] true if face is immutable
     def immutable?
       C.from_hb_bool(C.hb_face_is_immutable(@ptr))

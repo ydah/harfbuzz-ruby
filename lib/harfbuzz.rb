@@ -154,6 +154,20 @@ module HarfBuzz
     C.hb_language_get_default
   end
 
+  # Converts a script name string to a script value
+  # @param str [String] Script name (e.g., "Arab", "Latn")
+  # @return [Integer] Script value
+  def self.script(str)
+    C.hb_script_from_string(str, str.bytesize)
+  end
+
+  # Converts an ISO 15924 OpenType tag to a script value
+  # @param tag [Integer] ISO 15924 tag (e.g., HarfBuzz.tag("Arab"))
+  # @return [Integer] Script value
+  def self.script_from_tag(tag)
+    C.hb_script_from_iso15924_tag(tag)
+  end
+
   # Returns the horizontal direction for a script
   # @param script [Integer] Script value
   # @return [Symbol] Direction symbol (:ltr or :rtl)
