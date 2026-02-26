@@ -174,4 +174,76 @@ RSpec.describe HarfBuzz::Set do
       expect(set.include?(0)).to be false
     end
   end
+
+  describe ".empty" do
+    it "returns the empty Set" do
+      expect(described_class.empty).to be_a(described_class)
+    end
+  end
+
+  describe "#==" do
+    it "returns true for equal sets" do
+      set.add(1); set.add(2)
+      other = described_class.new
+      other.add(1); other.add(2)
+      expect(set == other).to be true
+    end
+
+    it "returns false for different sets" do
+      set.add(1)
+      other = described_class.new
+      other.add(2)
+      expect(set == other).to be false
+    end
+  end
+
+  describe "#hash" do
+    it "returns an integer" do
+      set.add(1)
+      expect(set.hash).to be_an(Integer)
+    end
+  end
+
+  describe "#replace" do
+    it "replaces the set contents with another set" do
+      set.add(1); set.add(2)
+      other = described_class.new
+      other.add(99)
+      set.replace(other)
+      expect(set.to_a).to eq([99])
+    end
+  end
+
+  describe "#min / #max" do
+    it "returns the minimum value" do
+      set.add(5); set.add(2); set.add(8)
+      expect(set.min).to eq(2)
+    end
+
+    it "returns the maximum value" do
+      set.add(5); set.add(2); set.add(8)
+      expect(set.max).to eq(8)
+    end
+  end
+
+  describe "#add_sorted_array" do
+    it "adds multiple values from a sorted array" do
+      set.add_sorted_array([10, 20, 30])
+      expect(set.to_a).to eq([10, 20, 30])
+    end
+  end
+
+  describe "#delete_range" do
+    it "removes a range of values" do
+      set.add_range(1, 10)
+      set.delete_range(3, 7)
+      expect(set.to_a).to eq([1, 2, 8, 9, 10])
+    end
+  end
+
+  describe "#inspect" do
+    it "includes class name" do
+      expect(set.inspect).to include("HarfBuzz::Set")
+    end
+  end
 end

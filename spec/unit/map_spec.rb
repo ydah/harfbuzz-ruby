@@ -120,4 +120,49 @@ RSpec.describe HarfBuzz::Map do
       expect(values.include?(20)).to be true
     end
   end
+
+  describe ".empty" do
+    it "returns the empty Map" do
+      expect(described_class.empty).to be_a(described_class)
+    end
+  end
+
+  describe "#==" do
+    it "returns true for equal maps" do
+      map[1] = 10
+      other = described_class.new
+      other[1] = 10
+      expect(map == other).to be true
+    end
+
+    it "returns false for different maps" do
+      map[1] = 10
+      other = described_class.new
+      other[1] = 99
+      expect(map == other).to be false
+    end
+  end
+
+  describe "#hash" do
+    it "returns an integer" do
+      map[1] = 10
+      expect(map.hash).to be_an(Integer)
+    end
+  end
+
+  describe "#update / #merge!" do
+    it "merges another map into self" do
+      map[1] = 10
+      other = described_class.new
+      other[2] = 20
+      map.update(other)
+      expect(map[2]).to eq(20)
+    end
+  end
+
+  describe "#inspect" do
+    it "includes class name" do
+      expect(map.inspect).to include("HarfBuzz::Map")
+    end
+  end
 end
