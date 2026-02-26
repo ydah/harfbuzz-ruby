@@ -51,6 +51,33 @@ RSpec.describe HarfBuzz::FontFuncs do
     end
   end
 
+  describe "#on_glyph_contour_point" do
+    it "registers a callback without raising" do
+      expect {
+        funcs.on_glyph_contour_point { |_font, _glyph, _idx| [0, 0] }
+      }.not_to raise_error
+    end
+  end
+
+  describe "#on_draw_glyph" do
+    it "registers a callback without raising" do
+      expect {
+        funcs.on_draw_glyph { |_font, _glyph, _dfuncs, _ddata| }
+      }.not_to raise_error
+    end
+  end
+
+  describe "Font#funcs=" do
+    it "sets font funcs via setter syntax" do
+      blob = HarfBuzz::Blob.from_file!(system_font_path)
+      face = HarfBuzz::Face.new(blob, 0)
+      font = HarfBuzz::Font.new(face)
+      custom_funcs = described_class.new
+      custom_funcs.make_immutable!
+      expect { font.funcs = custom_funcs }.not_to raise_error
+    end
+  end
+
   describe "integration: custom font backend" do
     it "uses custom funcs during shaping" do
       blob = HarfBuzz::Blob.from_file!(system_font_path)

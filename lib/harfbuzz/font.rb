@@ -25,6 +25,12 @@ module HarfBuzz
       self
     end
 
+    # Sets the font funcs (setter alias for set_funcs without font_data)
+    # @param funcs [FontFuncs] FontFuncs object
+    def funcs=(funcs)
+      set_funcs(funcs)
+    end
+
     # Creates a sub-font of this font
     # @return [Font]
     def create_sub_font

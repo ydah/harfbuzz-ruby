@@ -244,6 +244,34 @@ module HarfBuzz
       self
     end
 
+    # Sets the glyph contour point callback
+    # @yield [font, glyph, point_index] Called with font pointer, glyph ID, and point index
+    # @yieldreturn [Array<Integer>, nil] [x, y] contour point coordinates, or nil if not found
+    def on_glyph_contour_point(&block)
+      cb = FFI::Function.new(:int, [:pointer, :pointer, :uint32, :uint, :pointer, :pointer, :pointer]) do |font_ptr, _font_data, glyph, point_index, x_out, y_out, _user_data|
+        result = block.call(font_ptr, glyph, point_index)
+        next 0 unless result
+
+        x_out.write_int32(result[0])
+        y_out.write_int32(result[1])
+        1
+      end
+      @callbacks[:glyph_contour_point] = cb
+      C.hb_font_funcs_set_glyph_contour_point_func(@ptr, cb, nil, nil)
+      self
+    end
+
+    # Sets the draw glyph callback (called when font draws a glyph via draw funcs)
+    # @yield [font, glyph, draw_funcs_ptr, draw_data_ptr] Called with font pointer, glyph ID, and draw state
+    def on_draw_glyph(&block)
+      cb = FFI::Function.new(:void, [:pointer, :pointer, :uint32, :pointer, :pointer, :pointer]) do |font_ptr, _font_data, glyph, draw_funcs_ptr, draw_data_ptr, _user_data|
+        block.call(font_ptr, glyph, draw_funcs_ptr, draw_data_ptr)
+      end
+      @callbacks[:draw_glyph] = cb
+      C.hb_font_funcs_set_draw_glyph_func(@ptr, cb, nil, nil)
+      self
+    end
+
     def inspect
       "#<HarfBuzz::FontFuncs immutable=#{immutable?}>"
     end
