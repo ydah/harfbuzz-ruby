@@ -118,11 +118,16 @@ module HarfBuzz
     C.from_hb_bool(C.hb_version_atleast(major, minor, micro))
   end
 
-  # Converts a 4-character string to an OpenType tag (uint32)
-  # @param str [String] 4-character tag string (e.g., "GSUB")
+  # Converts a 4-character string, Symbol, or Integer to an OpenType tag (uint32)
+  # @param str [String, Symbol, Integer] Tag as string (e.g., "GSUB"), symbol, or uint32 integer
   # @return [Integer] Tag as uint32
   def self.tag(str)
-    C.hb_tag_from_string(str, str.bytesize)
+    case str
+    when Integer then str
+    when Symbol  then tag(str.to_s)
+    when String  then C.hb_tag_from_string(str, str.bytesize)
+    else raise InvalidArgumentError, "Cannot convert #{str.class} to tag"
+    end
   end
 
   # Converts an OpenType tag (uint32) to a 4-character string

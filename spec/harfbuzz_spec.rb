@@ -36,6 +36,15 @@ RSpec.describe HarfBuzz do
       tag_int = HarfBuzz.tag("GSUB")
       expect(HarfBuzz.tag_to_s(tag_int)).to eq("GSUB")
     end
+
+    it "accepts an Integer and returns it as-is" do
+      tag_int = HarfBuzz.tag("GSUB")
+      expect(HarfBuzz.tag(tag_int)).to eq(tag_int)
+    end
+
+    it "accepts a Symbol" do
+      expect(HarfBuzz.tag(:GSUB)).to eq(HarfBuzz.tag("GSUB"))
+    end
   end
 
   describe ".direction" do

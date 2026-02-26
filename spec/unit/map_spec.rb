@@ -68,6 +68,12 @@ RSpec.describe HarfBuzz::Map do
       map.each { |k, v| pairs << [k, v] }
       expect(pairs).to contain_exactly([1, 10], [2, 20])
     end
+
+    it "returns an Enumerator when no block given" do
+      map[1] = 10
+      enum = map.each
+      expect(enum).to be_a(Enumerator)
+    end
   end
 
   describe "#to_h" do

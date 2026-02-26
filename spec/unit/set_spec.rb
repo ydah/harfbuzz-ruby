@@ -60,6 +60,55 @@ RSpec.describe HarfBuzz::Set do
     end
   end
 
+  describe "#each" do
+    it "yields values in ascending order" do
+      set.add(67); set.add(65); set.add(66)
+      values = []
+      set.each { |v| values << v }
+      expect(values).to eq([65, 66, 67])
+    end
+
+    it "returns an Enumerator when no block given" do
+      set.add(65); set.add(66)
+      enum = set.each
+      expect(enum).to be_a(Enumerator)
+      expect(enum.to_a).to eq([65, 66])
+    end
+  end
+
+  describe "#each_range" do
+    it "yields contiguous ranges" do
+      set.add_range(65, 67)
+      set.add_range(70, 72)
+      ranges = []
+      set.each_range { |f, l| ranges << [f, l] }
+      expect(ranges).to eq([[65, 67], [70, 72]])
+    end
+
+    it "returns an Enumerator when no block given" do
+      set.add_range(65, 67)
+      enum = set.each_range
+      expect(enum).to be_a(Enumerator)
+      expect(enum.to_a).to eq([[65, 67]])
+    end
+  end
+
+  describe "#reverse_each" do
+    it "yields values in descending order" do
+      set.add(65); set.add(66); set.add(67)
+      values = []
+      set.reverse_each { |v| values << v }
+      expect(values).to eq([67, 66, 65])
+    end
+
+    it "returns an Enumerator when no block given" do
+      set.add(65); set.add(66)
+      enum = set.reverse_each
+      expect(enum).to be_a(Enumerator)
+      expect(enum.to_a).to eq([66, 65])
+    end
+  end
+
   describe "set operations" do
     let(:other) { described_class.new }
 

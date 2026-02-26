@@ -189,15 +189,22 @@ module HarfBuzz
 
     # Iterates over all values in ascending order
     # @yield [value]
+    # @return [Enumerator] if no block given
     def each
+      return to_enum(:each) unless block_given?
+
       cp_ptr = FFI::MemoryPointer.new(:uint32)
       cp_ptr.write_uint32(HB_SET_VALUE_INVALID)
       yield cp_ptr.read_uint32 while C.from_hb_bool(C.hb_set_next(@ptr, cp_ptr))
+      self
     end
 
     # Iterates over contiguous ranges in ascending order
     # @yield [first, last] First and last value of each range (inclusive)
+    # @return [Enumerator] if no block given
     def each_range
+      return to_enum(:each_range) unless block_given?
+
       first_ptr = FFI::MemoryPointer.new(:uint32)
       last_ptr  = FFI::MemoryPointer.new(:uint32)
       first_ptr.write_uint32(HB_SET_VALUE_INVALID)
@@ -205,14 +212,19 @@ module HarfBuzz
       while C.from_hb_bool(C.hb_set_next_range(@ptr, first_ptr, last_ptr))
         yield first_ptr.read_uint32, last_ptr.read_uint32
       end
+      self
     end
 
     # Iterates over all values in descending order
     # @yield [value]
+    # @return [Enumerator] if no block given
     def reverse_each
+      return to_enum(:reverse_each) unless block_given?
+
       cp_ptr = FFI::MemoryPointer.new(:uint32)
       cp_ptr.write_uint32(HB_SET_VALUE_INVALID)
       yield cp_ptr.read_uint32 while C.from_hb_bool(C.hb_set_previous(@ptr, cp_ptr))
+      self
     end
 
     # Bulk-retrieves all values as an array

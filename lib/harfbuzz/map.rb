@@ -116,7 +116,10 @@ module HarfBuzz
 
     # Iterates over key-value pairs
     # @yield [key, value]
+    # @return [Enumerator] if no block given
     def each
+      return to_enum(:each) unless block_given?
+
       idx_ptr = FFI::MemoryPointer.new(:int)
       idx_ptr.write_int(-1)
       key_ptr = FFI::MemoryPointer.new(:uint32)
@@ -125,6 +128,7 @@ module HarfBuzz
       while C.from_hb_bool(C.hb_map_next(@ptr, idx_ptr, key_ptr, val_ptr))
         yield key_ptr.read_uint32, val_ptr.read_uint32
       end
+      self
     end
 
     def inspect
