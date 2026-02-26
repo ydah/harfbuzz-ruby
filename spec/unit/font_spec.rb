@@ -214,6 +214,87 @@ RSpec.describe HarfBuzz::Font do
     end
   end
 
+  describe "#synthetic_bold / #synthetic_bold=" do
+    it "returns [x, y, in_place] array" do
+      result = font.synthetic_bold
+      expect(result).to be_an(Array)
+      expect(result.size).to eq(3)
+      expect(result[0]).to be_a(Float)
+      expect(result[1]).to be_a(Float)
+    end
+
+    it "can be set" do
+      font.synthetic_bold = [0.05, 0.05, false]
+      result = font.synthetic_bold
+      expect(result[0]).to be_within(0.001).of(0.05)
+      expect(result[1]).to be_within(0.001).of(0.05)
+    end
+  end
+
+  describe "#synthetic_slant / #synthetic_slant=" do
+    it "returns a float" do
+      expect(font.synthetic_slant).to be_a(Float)
+    end
+
+    it "can be set" do
+      font.synthetic_slant = 0.3
+      expect(font.synthetic_slant).to be_within(0.001).of(0.3)
+    end
+  end
+
+  describe "#variations=" do
+    it "accepts an array of Variation objects without raising" do
+      var = HarfBuzz::Variation.from_string("wght=700")
+      expect { font.variations = [var] }.not_to raise_error
+    end
+  end
+
+  describe "#set_variation" do
+    it "sets a single axis value without raising" do
+      wght = HarfBuzz.tag("wght")
+      expect { font.set_variation(wght, 700.0) }.not_to raise_error
+    end
+  end
+
+  describe "#var_coords_design / #var_coords_design=" do
+    it "returns an Array" do
+      expect(font.var_coords_design).to be_an(Array)
+    end
+
+    it "can be set from an array of floats" do
+      expect { font.var_coords_design = [700.0] }.not_to raise_error
+    end
+  end
+
+  describe "#var_coords_normalized / #var_coords_normalized=" do
+    it "returns an Array" do
+      expect(font.var_coords_normalized).to be_an(Array)
+    end
+
+    it "can be set from an array of integers" do
+      expect { font.var_coords_normalized = [0] }.not_to raise_error
+    end
+  end
+
+  describe "#funcs=" do
+    it "accepts a FontFuncs object without raising" do
+      ff = HarfBuzz::FontFuncs.new
+      expect { font.funcs = ff }.not_to raise_error
+    end
+  end
+
+  describe "#paint_glyph" do
+    it "does not raise for glyph 0 with default options" do
+      pf = HarfBuzz::PaintFuncs.new
+      expect { font.paint_glyph(0, pf) }.not_to raise_error
+    end
+
+    it "accepts palette_index and foreground keyword args" do
+      pf = HarfBuzz::PaintFuncs.new
+      expect { font.paint_glyph(0, pf, palette_index: 0, foreground: 0xFFFFFFFF) }.not_to raise_error
+    end
+  end
+
   describe "#inspect" do
     it "includes class name" do
       expect(font.inspect).to include("HarfBuzz::Font")

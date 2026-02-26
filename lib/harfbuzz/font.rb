@@ -130,7 +130,6 @@ module HarfBuzz
                       s.to_ptr.read_bytes(C::HbVariationT.size))
       end
       C.hb_font_set_variations(@ptr, ptr, structs.size)
-      GC.keep_alive(structs)
     end
 
     # Sets a single variation axis value
