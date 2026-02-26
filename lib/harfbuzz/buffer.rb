@@ -359,6 +359,20 @@ module HarfBuzz
       C.hb_buffer_diff(@ptr, other.ptr, dottedcircle_glyph, position_fuzz)
     end
 
+    # Serializes buffer contents (glyphs or unicode) to a string representation
+    # @param font [Font, nil] Font used for glyph names (optional, used for glyphs content)
+    # @param format [Symbol] Serialize format (:text or :json), defaults to :text
+    # @param flags [Integer] Serialize flags (0 = default)
+    # @return [String] Serialized data
+    def serialize(font: nil, format: :text, flags: 0)
+      buf_size = 4096
+      buf = FFI::MemoryPointer.new(:char, buf_size)
+      written_ptr = FFI::MemoryPointer.new(:uint)
+      font_ptr = font ? font.ptr : FFI::Pointer::NULL
+      C.hb_buffer_serialize(@ptr, 0, length, buf, buf_size, written_ptr, font_ptr, format, flags)
+      buf.read_string(written_ptr.read_uint)
+    end
+
     # Serializes shaped glyphs to a string representation
     # @param font [Font, nil] Font used for glyph names (optional)
     # @param format [Symbol] Serialize format (:text or :json), defaults to :text

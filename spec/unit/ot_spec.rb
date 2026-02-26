@@ -169,9 +169,38 @@ RSpec.describe "HarfBuzz OpenType API" do
       end
     end
 
+    describe ".baseline2" do
+      it "returns an integer or nil (uses hb_script_t + hb_language_t)" do
+        roman_baseline = HarfBuzz.tag("romn")
+        script = HarfBuzz.script("Latn")
+        language = HarfBuzz.language("en")
+        result = described_class.baseline2(font, roman_baseline, :ltr, script, language)
+        expect(result).to be_an(Integer).or be_nil
+      end
+    end
+
+    describe ".baseline_with_fallback2" do
+      it "returns an integer (uses hb_script_t + hb_language_t)" do
+        roman_baseline = HarfBuzz.tag("romn")
+        script = HarfBuzz.script("Latn")
+        language = HarfBuzz.language("en")
+        result = described_class.baseline_with_fallback2(font, roman_baseline, :ltr, script, language)
+        expect(result).to be_an(Integer)
+      end
+    end
+
     describe ".font_extents" do
       it "returns a Hash or nil" do
         result = described_class.font_extents(font, :ltr, HarfBuzz.tag("latn"))
+        expect(result).to be_a(Hash).or be_nil
+      end
+    end
+
+    describe ".font_extents2" do
+      it "returns a Hash or nil (uses hb_script_t + hb_language_t)" do
+        script = HarfBuzz.script("Latn")
+        language = HarfBuzz.language("en")
+        result = described_class.font_extents2(font, :ltr, script, language)
         expect(result).to be_a(Hash).or be_nil
       end
     end

@@ -118,6 +118,10 @@ module HarfBuzz
     C.from_hb_bool(C.hb_version_atleast(major, minor, micro))
   end
 
+  class << self
+    alias version_at_least? version_atleast?
+  end
+
   # Converts a 4-character string, Symbol, or Integer to an OpenType tag (uint32)
   # @param str [String, Symbol, Integer] Tag as string (e.g., "GSUB"), symbol, or uint32 integer
   # @return [Integer] Tag as uint32

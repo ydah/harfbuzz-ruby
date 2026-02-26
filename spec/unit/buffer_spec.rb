@@ -118,6 +118,27 @@ RSpec.describe HarfBuzz::Buffer do
     end
   end
 
+  describe "#serialize" do
+    it "serializes unicode codepoints when buffer has unicode content" do
+      buffer.add_utf8("Hi")
+      result = buffer.serialize
+      expect(result).to be_a(String)
+      expect(result).not_to be_empty
+    end
+
+    it "serializes after shaping" do
+      blob = HarfBuzz::Blob.from_file!(system_font_path)
+      face = HarfBuzz::Face.new(blob, 0)
+      font = HarfBuzz::Font.new(face)
+      buffer.add_utf8("Hi")
+      buffer.guess_segment_properties
+      HarfBuzz.shape(font, buffer)
+      result = buffer.serialize(font: font)
+      expect(result).to be_a(String)
+      expect(result).not_to be_empty
+    end
+  end
+
   describe "#serialize_glyphs" do
     it "serializes after shaping" do
       blob = HarfBuzz::Blob.from_file!(system_font_path)

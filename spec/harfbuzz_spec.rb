@@ -31,6 +31,13 @@ RSpec.describe HarfBuzz do
     end
   end
 
+  describe ".version_at_least?" do
+    it "is an alias for version_atleast?" do
+      expect(HarfBuzz.version_at_least?(1, 0, 0)).to be true
+      expect(HarfBuzz.version_at_least?(999, 0, 0)).to be false
+    end
+  end
+
   describe ".tag / .tag_to_s" do
     it "round-trips a 4-character tag" do
       tag_int = HarfBuzz.tag("GSUB")

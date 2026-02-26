@@ -91,6 +91,9 @@ module HarfBuzz
     attach_function :hb_buffer_reverse_range, [:hb_buffer_t, :uint, :uint], :void
     attach_function :hb_buffer_reverse_clusters, [:hb_buffer_t], :void
 
+    attach_function :hb_buffer_serialize,
+      [:hb_buffer_t, :uint, :uint, :pointer, :uint, :pointer,
+       :hb_font_t, :hb_buffer_serialize_format_t, :uint], :uint
     attach_function :hb_buffer_serialize_glyphs,
       [:hb_buffer_t, :uint, :uint, :pointer, :uint, :pointer,
        :hb_font_t, :hb_buffer_serialize_format_t, :uint], :uint

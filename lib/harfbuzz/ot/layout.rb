@@ -412,6 +412,63 @@ module HarfBuzz
         }
       end
 
+      # Returns a baseline coordinate value (v2: takes hb_script_t + hb_language_t)
+      # @param font [Font] Font
+      # @param baseline_tag [Integer] Baseline tag
+      # @param dir [Symbol] Direction
+      # @param script [Integer] Script value (hb_script_t, e.g. from HarfBuzz.script("Latn"))
+      # @param language [FFI::Pointer, nil] Language pointer (nil = default)
+      # @return [Integer, nil] Baseline coordinate or nil if not available
+      def baseline2(font, baseline_tag, dir, script, language = nil)
+        lang_ptr = language || FFI::Pointer::NULL
+        coord_ptr = FFI::MemoryPointer.new(:int32)
+        found = C.from_hb_bool(
+          C.hb_ot_layout_get_baseline2(
+            font.ptr, baseline_tag, dir, script, lang_ptr, coord_ptr
+          )
+        )
+        found ? coord_ptr.read_int32 : nil
+      end
+
+      # Returns a baseline coordinate with fallback (v2: takes hb_script_t + hb_language_t)
+      # @param font [Font] Font
+      # @param baseline_tag [Integer] Baseline tag
+      # @param dir [Symbol] Direction
+      # @param script [Integer] Script value (hb_script_t)
+      # @param language [FFI::Pointer, nil] Language pointer
+      # @return [Integer] Baseline coordinate (with fallback)
+      def baseline_with_fallback2(font, baseline_tag, dir, script, language = nil)
+        lang_ptr = language || FFI::Pointer::NULL
+        coord_ptr = FFI::MemoryPointer.new(:int32)
+        C.hb_ot_layout_get_baseline_with_fallback2(
+          font.ptr, baseline_tag, dir, script, lang_ptr, coord_ptr
+        )
+        coord_ptr.read_int32
+      end
+
+      # Returns font extents from OT tables (v2: takes hb_script_t + hb_language_t)
+      # @param font [Font] Font
+      # @param dir [Symbol] Direction
+      # @param script [Integer] Script value (hb_script_t)
+      # @param language [FFI::Pointer, nil] Language pointer
+      # @return [Hash, nil] Font extents hash or nil
+      def font_extents2(font, dir, script, language = nil)
+        lang_ptr = language || FFI::Pointer::NULL
+        extents = C::HbFontExtentsT.new
+        found = C.from_hb_bool(
+          C.hb_ot_layout_get_font_extents2(
+            font.ptr, dir, script, lang_ptr, extents.to_ptr
+          )
+        )
+        return nil unless found
+
+        {
+          ascender: extents[:ascender],
+          descender: extents[:descender],
+          line_gap: extents[:line_gap]
+        }
+      end
+
       # Returns the horizontal baseline tag for a script
       # @param script [Integer] Script value
       # @return [Integer] Baseline tag

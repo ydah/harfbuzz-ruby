@@ -62,6 +62,14 @@ module HarfBuzz
     attach_function :hb_ot_layout_get_font_extents,
       [:hb_font_t, :hb_direction_t, :uint32, :pointer, :pointer], :hb_bool_t
 
+    # "2" variants: use hb_script_t + hb_language_t (enum + opaque pointer)
+    attach_function :hb_ot_layout_get_baseline2,
+      [:hb_font_t, :uint, :hb_direction_t, :uint32, :pointer, :pointer], :hb_bool_t
+    attach_function :hb_ot_layout_get_baseline_with_fallback2,
+      [:hb_font_t, :uint, :hb_direction_t, :uint32, :pointer, :pointer], :void
+    attach_function :hb_ot_layout_get_font_extents2,
+      [:hb_font_t, :hb_direction_t, :uint32, :pointer, :pointer], :hb_bool_t
+
     attach_function :hb_ot_layout_get_horizontal_baseline_tag_for_script,
       [:uint32], :uint
 
