@@ -70,11 +70,20 @@ module HarfBuzz
 
     alias size length
 
-    # @return [String] Blob data as a Ruby String
+    # @return [String] Blob data as a Ruby String (read-only)
     def data
       length_ptr = FFI::MemoryPointer.new(:uint)
       data_ptr = C.hb_blob_get_data(@ptr, length_ptr)
       return "".b if data_ptr.null?
+
+      data_ptr.read_bytes(length_ptr.read_uint)
+    end
+
+    # @return [String, nil] Blob data as a writable Ruby String, or nil if blob is immutable
+    def data_writable
+      length_ptr = FFI::MemoryPointer.new(:uint)
+      data_ptr = C.hb_blob_get_data_writable(@ptr, length_ptr)
+      return nil if data_ptr.null?
 
       data_ptr.read_bytes(length_ptr.read_uint)
     end

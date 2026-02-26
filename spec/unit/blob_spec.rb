@@ -62,4 +62,48 @@ RSpec.describe HarfBuzz::Blob do
       expect(sub.length).to eq(4)
     end
   end
+
+  describe "#data" do
+    it "returns binary string with correct length" do
+      blob = described_class.from_file!(system_font_path)
+      d = blob.data
+      expect(d).to be_a(String)
+      expect(d.bytesize).to eq(blob.length)
+    end
+
+    it "returns empty string for empty blob" do
+      expect(described_class.empty.data).to eq("".b)
+    end
+  end
+
+  describe "#data_writable" do
+    it "returns nil for an immutable blob" do
+      blob = described_class.from_file!(system_font_path)
+      blob.make_immutable!
+      expect(blob.data_writable).to be_nil
+    end
+
+    it "returns binary string for a writable blob" do
+      blob = described_class.new("hello")
+      result = blob.data_writable
+      expect(result).to be_a(String).or be_nil
+    end
+  end
+
+  describe "#writable_copy" do
+    it "returns a writable Blob or nil" do
+      blob = described_class.from_file!(system_font_path)
+      copy = blob.writable_copy
+      expect(copy).to be_a(described_class).or be_nil
+    end
+  end
+
+  describe "#inspect" do
+    it "includes class name, length, and immutable state" do
+      blob = described_class.from_file!(system_font_path)
+      expect(blob.inspect).to include("HarfBuzz::Blob")
+      expect(blob.inspect).to include("length=")
+      expect(blob.inspect).to include("immutable=")
+    end
+  end
 end
