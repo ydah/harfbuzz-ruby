@@ -163,6 +163,13 @@ module HarfBuzz
     C.hb_language_get_default
   end
 
+  # Returns the BCP 47 string representation of a language pointer
+  # @param lang [FFI::Pointer] Language pointer (from HarfBuzz.language)
+  # @return [String] BCP 47 language tag string
+  def self.language_to_s(lang)
+    C.hb_language_to_string(lang)
+  end
+
   # Checks if two language tags match (BCP 47 prefix comparison)
   # @param lang1 [FFI::Pointer] First language pointer
   # @param lang2 [FFI::Pointer] Second language pointer

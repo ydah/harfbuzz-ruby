@@ -79,6 +79,32 @@ RSpec.describe HarfBuzz do
     end
   end
 
+  describe ".language_to_s" do
+    it "returns the BCP 47 string for a language pointer" do
+      lang = HarfBuzz.language("en")
+      expect(HarfBuzz.language_to_s(lang)).to eq("en")
+    end
+
+    it "returns a string for other language tags" do
+      lang = HarfBuzz.language("ja")
+      expect(HarfBuzz.language_to_s(lang)).to be_a(String)
+    end
+  end
+
+  describe ".language_matches?" do
+    it "returns true for matching language tags" do
+      lang1 = HarfBuzz.language("en")
+      lang2 = HarfBuzz.language("en")
+      expect(HarfBuzz.language_matches?(lang1, lang2)).to be true
+    end
+
+    it "returns false for non-matching language tags" do
+      lang1 = HarfBuzz.language("en")
+      lang2 = HarfBuzz.language("ja")
+      expect(HarfBuzz.language_matches?(lang1, lang2)).to be false
+    end
+  end
+
   describe ".shapers" do
     it "returns an array of strings" do
       shapers = HarfBuzz.shapers
