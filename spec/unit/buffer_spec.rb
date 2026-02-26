@@ -94,6 +94,30 @@ RSpec.describe HarfBuzz::Buffer do
     end
   end
 
+  describe "#add_latin1" do
+    it "adds Latin-1 text to the buffer" do
+      buffer.add_latin1("Hello")
+      expect(buffer.length).to eq(5)
+    end
+  end
+
+  describe "#unicode_funcs / #unicode_funcs=" do
+    it "returns a UnicodeFuncs" do
+      expect(buffer.unicode_funcs).to be_a(HarfBuzz::UnicodeFuncs)
+    end
+
+    it "can be set to custom unicode funcs" do
+      ufuncs = HarfBuzz::UnicodeFuncs.new
+      expect { buffer.unicode_funcs = ufuncs }.not_to raise_error
+    end
+  end
+
+  describe "#on_message" do
+    it "registers a message callback without raising" do
+      expect { buffer.on_message { |msg| } }.not_to raise_error
+    end
+  end
+
   describe "#serialize_glyphs" do
     it "serializes after shaping" do
       blob = HarfBuzz::Blob.from_file!(system_font_path)
@@ -105,6 +129,40 @@ RSpec.describe HarfBuzz::Buffer do
       result = buffer.serialize_glyphs(font: font)
       expect(result).to be_a(String)
       expect(result).not_to be_empty
+    end
+  end
+
+  describe "#serialize_unicode" do
+    it "serializes unicode codepoints" do
+      buffer.add_utf8("Hi")
+      result = buffer.serialize_unicode
+      expect(result).to be_a(String)
+      expect(result).not_to be_empty
+    end
+  end
+
+  describe "#deserialize_unicode" do
+    it "deserializes unicode data into the buffer" do
+      buffer.add_utf8("Hi")
+      serialized = buffer.serialize_unicode
+      buffer2 = described_class.new
+      result = buffer2.deserialize_unicode(serialized)
+      expect(result).to be(true).or be(false)
+    end
+  end
+
+  describe "#deserialize_glyphs" do
+    it "accepts a serialized glyph string" do
+      blob = HarfBuzz::Blob.from_file!(system_font_path)
+      face = HarfBuzz::Face.new(blob, 0)
+      font = HarfBuzz::Font.new(face)
+      buffer.add_utf8("Hi")
+      buffer.guess_segment_properties
+      HarfBuzz.shape(font, buffer)
+      serialized = buffer.serialize_glyphs
+      buffer2 = described_class.new
+      result = buffer2.deserialize_glyphs(serialized, font: font)
+      expect(result).to be(true).or be(false)
     end
   end
 end

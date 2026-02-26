@@ -71,4 +71,36 @@ RSpec.describe HarfBuzz do
       shapers.each { |s| expect(s).to be_a(String) }
     end
   end
+
+  describe ".script" do
+    it "returns an integer for a known script name" do
+      result = HarfBuzz.script("Arab")
+      expect(result).to be_an(Integer)
+    end
+
+    it "returns the same value as script_from_tag for a matching tag" do
+      tag = HarfBuzz.tag("Arab")
+      expect(HarfBuzz.script("Arab")).to eq(HarfBuzz.script_from_tag(tag))
+    end
+  end
+
+  describe ".script_from_tag" do
+    it "returns an integer for an ISO 15924 tag" do
+      tag = HarfBuzz.tag("Latn")
+      result = HarfBuzz.script_from_tag(tag)
+      expect(result).to be_an(Integer)
+    end
+  end
+
+  describe ".script_horizontal_direction" do
+    it "returns :ltr for Latin script" do
+      script = HarfBuzz.script("Latn")
+      expect(HarfBuzz.script_horizontal_direction(script)).to eq(:ltr)
+    end
+
+    it "returns :rtl for Arabic script" do
+      script = HarfBuzz.script("Arab")
+      expect(HarfBuzz.script_horizontal_direction(script)).to eq(:rtl)
+    end
+  end
 end

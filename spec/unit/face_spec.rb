@@ -71,4 +71,36 @@ RSpec.describe HarfBuzz::Face do
       expect(face).to be_immutable
     end
   end
+
+  describe "#unicodes" do
+    it "returns a Set" do
+      expect(face.unicodes).to be_a(HarfBuzz::Set)
+    end
+
+    it "contains codepoints" do
+      expect(face.unicodes.size).to be > 0
+    end
+  end
+
+  describe "#nominal_glyph_mapping" do
+    it "returns a Map" do
+      expect(face.nominal_glyph_mapping).to be_a(HarfBuzz::Map)
+    end
+
+    it "contains entries" do
+      expect(face.nominal_glyph_mapping.size).to be > 0
+    end
+  end
+
+  describe "#variation_selectors" do
+    it "returns a Set" do
+      expect(face.variation_selectors).to be_a(HarfBuzz::Set)
+    end
+  end
+
+  describe "#variation_unicodes" do
+    it "returns a Set for any selector" do
+      expect(face.variation_unicodes(0xFE0E)).to be_a(HarfBuzz::Set)
+    end
+  end
 end

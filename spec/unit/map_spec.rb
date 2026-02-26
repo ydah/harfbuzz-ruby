@@ -83,4 +83,35 @@ RSpec.describe HarfBuzz::Map do
       expect(map.allocation_successful?).to be true
     end
   end
+
+  describe "#keys" do
+    it "returns a Set" do
+      map[1] = 10
+      map[2] = 20
+      expect(map.keys).to be_a(HarfBuzz::Set)
+    end
+
+    it "contains all keys" do
+      map[1] = 10
+      map[2] = 20
+      keys = map.keys
+      expect(keys.include?(1)).to be true
+      expect(keys.include?(2)).to be true
+    end
+  end
+
+  describe "#values" do
+    it "returns a Set" do
+      map[1] = 10
+      expect(map.values).to be_a(HarfBuzz::Set)
+    end
+
+    it "contains all values" do
+      map[1] = 10
+      map[2] = 20
+      values = map.values
+      expect(values.include?(10)).to be true
+      expect(values.include?(20)).to be true
+    end
+  end
 end
