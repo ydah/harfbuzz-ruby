@@ -255,12 +255,22 @@ module HarfBuzz
     end
 
     # @return [Integer] Random state
+    # @raise [NotImplementedError] if HarfBuzz < 7.2.0
     def random_state
+      unless C.respond_to?(:hb_buffer_get_random_state)
+        raise NotImplementedError, "random_state requires HarfBuzz >= 7.2.0"
+      end
+
       C.hb_buffer_get_random_state(@ptr)
     end
 
     # @param state [Integer] Random state
+    # @raise [NotImplementedError] if HarfBuzz < 7.2.0
     def random_state=(state)
+      unless C.respond_to?(:hb_buffer_set_random_state)
+        raise NotImplementedError, "random_state= requires HarfBuzz >= 7.2.0"
+      end
+
       C.hb_buffer_set_random_state(@ptr, state)
     end
 

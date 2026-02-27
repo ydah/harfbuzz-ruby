@@ -243,7 +243,7 @@ RSpec.describe HarfBuzz::Buffer do
     end
   end
 
-  describe "#random_state / #random_state=" do
+  describe "#random_state / #random_state=", if: HarfBuzz.version_atleast?(7, 2, 0) do
     it "returns an integer" do
       expect(buffer.random_state).to be_an(Integer)
     end

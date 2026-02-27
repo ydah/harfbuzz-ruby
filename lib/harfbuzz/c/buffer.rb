@@ -76,8 +76,13 @@ module HarfBuzz
     attach_function :hb_buffer_get_not_found_glyph,
       [:hb_buffer_t], :hb_codepoint_t
 
-    attach_function :hb_buffer_set_random_state, [:hb_buffer_t, :uint], :void
-    attach_function :hb_buffer_get_random_state, [:hb_buffer_t], :uint
+    # hb_buffer_{set,get}_random_state requires HarfBuzz >= 7.2.0
+    begin
+      attach_function :hb_buffer_set_random_state, [:hb_buffer_t, :uint], :void
+      attach_function :hb_buffer_get_random_state, [:hb_buffer_t], :uint
+    rescue FFI::NotFoundError
+      # Not available in this version of HarfBuzz
+    end
 
     attach_function :hb_buffer_set_length, [:hb_buffer_t, :uint], :hb_bool_t
     attach_function :hb_buffer_get_length, [:hb_buffer_t], :uint
