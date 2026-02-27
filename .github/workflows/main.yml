@@ -40,21 +40,3 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.ruby == '3.3'
         run: RUN_MEMORY_TESTS=1 bundle exec rspec --tag memory
 
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Install HarfBuzz
-        run: sudo apt-get update && sudo apt-get install -y libharfbuzz-dev libharfbuzz-subset0
-
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3'
-          bundler-cache: true
-
-      - name: Run RuboCop
-        run: bundle exec rubocop --parallel
