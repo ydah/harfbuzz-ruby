@@ -1,29 +1,60 @@
-name: Ruby
+name: CI
 
 on:
   push:
     branches:
       - main
-
   pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    name: Ruby ${{ matrix.ruby }}
+  test:
+    name: Test (Ruby ${{ matrix.ruby }} on ${{ matrix.os }})
     strategy:
+      fail-fast: false
       matrix:
-        ruby:
-          - '4.0.0'
-
+        os: [ubuntu-latest, macos-latest]
+        ruby: ['3.1', '3.2', '3.3', '3.4']
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+
+      - name: Install HarfBuzz (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libharfbuzz-dev libharfbuzz-subset0
+
+      - name: Install HarfBuzz (macOS)
+        if: runner.os == 'macOS'
+        run: brew install harfbuzz
+
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Run the default task
-        run: bundle exec rake
+
+      - name: Run tests
+        run: bundle exec rspec --tag ~memory --tag ~performance
+
+      - name: Memory leak tests
+        if: matrix.os == 'ubuntu-latest' && matrix.ruby == '3.3'
+        run: RUN_MEMORY_TESTS=1 bundle exec rspec --tag memory
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install HarfBuzz
+        run: sudo apt-get update && sudo apt-get install -y libharfbuzz-dev libharfbuzz-subset0
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Run RuboCop
+        run: bundle exec rubocop --parallel
