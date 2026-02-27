@@ -10,3 +10,5 @@
 .rspec_status
 Gemfile.lock
 *.gem
+examples/render_output.svg
+examples/waterfall_output.html

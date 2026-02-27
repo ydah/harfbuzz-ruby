@@ -169,11 +169,20 @@ See the `examples/` directory for more complete examples:
 - `glyph_outlines.rb` - Glyph outline extraction
 - `opentype_features.rb` - OpenType feature queries
 - `variable_fonts.rb` - Variable font axis manipulation
+- `render_svg.rb` - Render shaped text to SVG and open in browser
+- `render_waterfall.rb` - Variable font weight waterfall (HTML + SVG)
 
 Run an example:
 
 ```bash
 bundle exec ruby examples/basic_shaping.rb
+```
+
+Rendering examples generate SVG/HTML and open them in the default browser:
+
+```bash
+bundle exec ruby examples/render_svg.rb "Hello, HarfBuzz!"
+bundle exec ruby examples/render_waterfall.rb /path/to/variable_font.ttf
 ```
 
 ## API Overview
