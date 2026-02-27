@@ -1,4 +1,594 @@
-module Harfbuzz
+# RBS type signatures for harfbuzz-ruby
+# HarfBuzz Ruby FFI bindings
+
+module HarfBuzz
   VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+  # HarfBuzz library version
+  def self.version: () -> [Integer, Integer, Integer]
+  def self.version_string: () -> String
+  def self.version_atleast?: (Integer major, Integer minor, Integer micro) -> bool
+  def self.version_at_least?: (Integer major, Integer minor, Integer micro) -> bool
+
+  # OpenType tag conversions
+  def self.tag: (String | Symbol | Integer) -> Integer
+  def self.tag_to_s: (Integer tag) -> String
+
+  # Direction
+  def self.direction: (String str) -> Symbol
+
+  # Language
+  def self.language: (String str) -> FFI::Pointer
+  def self.default_language: () -> FFI::Pointer
+  def self.language_to_s: (FFI::Pointer lang) -> String
+  def self.language_matches?: (FFI::Pointer lang1, FFI::Pointer lang2) -> bool
+
+  # Script
+  def self.script: (String str) -> Integer
+  def self.script_from_tag: (Integer tag) -> Integer
+  def self.script_horizontal_direction: (Integer script) -> Symbol
+
+  # Color component extraction
+  def self.color_alpha: (Integer color) -> Integer
+  def self.color_red: (Integer color) -> Integer
+  def self.color_green: (Integer color) -> Integer
+  def self.color_blue: (Integer color) -> Integer
+
+  # Shaping
+  def self.shape: (Font font, Buffer buffer, ?Array[Feature] features, ?shapers: Array[String]?) -> void
+  def self.shapers: () -> Array[String]
+  def self.shape_text: (
+    String text,
+    font_path: String,
+    ?features: Array[Feature | String] | Hash[Symbol | String, bool | Integer],
+    ?direction: Symbol?,
+    ?script: Integer?,
+    ?language: String?
+  ) -> ShapingResult
+
+  # Library path override
+  def self.library_path: () -> String
+  def self.library_path=: (String path) -> String
+
+  # Error hierarchy
+  class Error < StandardError; end
+  class AllocationError < Error; end
+  class InvalidArgumentError < Error; end
+  class FeatureParseError < Error; end
+  class VariationParseError < Error; end
+  class UnavailableError < Error; end
+  class SubsetError < Error; end
+
+  # hb_blob_t wrapper
+  class Blob
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: (String data, ?mode: Symbol) -> void
+    def self.from_file: (String path) -> Blob
+    def self.from_file!: (String path) -> Blob
+    def self.empty: () -> Blob
+    def self.wrap_owned: (FFI::Pointer ptr) -> Blob
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> Blob
+
+    def sub_blob: (Integer offset, Integer length) -> Blob
+    def writable_copy: () -> Blob?
+    def length: () -> Integer
+    def size: () -> Integer
+    def data: () -> String
+    def data_writable: () -> String?
+    def immutable?: () -> bool
+    def make_immutable!: () -> self
+    def inspect: () -> String
+  end
+
+  # hb_buffer_t wrapper
+  class Buffer
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: () -> void
+    def self.empty: () -> Buffer
+    def self.wrap_owned: (FFI::Pointer ptr) -> Buffer
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> Buffer
+    def self.serialize_format: (String str) -> Symbol
+    def self.serialize_format_name: (Symbol fmt) -> String
+    def self.serialize_formats: () -> Array[String]
+
+    def create_similar: () -> Buffer
+    def reset: () -> self
+    def clear: () -> self
+    def pre_allocate: (Integer size) -> bool
+    def allocation_successful?: () -> bool
+
+    def add: (Integer codepoint, Integer cluster) -> self
+    def add_utf8: (String text, ?item_offset: Integer, ?item_length: Integer) -> self
+    def add_utf16: (String text, ?item_offset: Integer, ?item_length: Integer) -> self
+    def add_utf32: (String text, ?item_offset: Integer, ?item_length: Integer) -> self
+    def add_latin1: (String text, ?item_offset: Integer, ?item_length: Integer) -> self
+    def add_codepoints: (Array[Integer] codepoints, ?item_offset: Integer, ?item_length: Integer) -> self
+    def append: (Buffer other, Integer start, Integer end_) -> self
+
+    def content_type: () -> Symbol
+    def content_type=: (Symbol type) -> void
+    def direction: () -> Symbol
+    def direction=: (Symbol dir) -> void
+    def script: () -> Integer
+    def script=: (Integer script) -> void
+    def language: () -> FFI::Pointer
+    def language=: (FFI::Pointer lang) -> void
+    def unicode_funcs: () -> UnicodeFuncs
+    def unicode_funcs=: (UnicodeFuncs ufuncs) -> void
+    def segment_properties: () -> untyped
+    def segment_properties=: (untyped props) -> void
+    def guess_segment_properties: () -> self
+
+    def flags: () -> Integer
+    def flags=: (Integer flags) -> void
+    def cluster_level: () -> Symbol
+    def cluster_level=: (Symbol level) -> void
+    def replacement_codepoint: () -> Integer
+    def replacement_codepoint=: (Integer cp) -> void
+    def invisible_glyph: () -> Integer
+    def invisible_glyph=: (Integer glyph) -> void
+    def not_found_glyph: () -> Integer
+    def not_found_glyph=: (Integer glyph) -> void
+    def random_state: () -> Integer
+    def random_state=: (Integer state) -> void
+
+    def length: () -> Integer
+    def size: () -> Integer
+    def length=: (Integer len) -> void
+
+    def glyph_infos: () -> Array[GlyphInfo]
+    def glyph_positions: () -> Array[GlyphPosition]
+    def has_positions?: () -> bool
+
+    def normalize_glyphs: () -> self
+    def reverse: () -> self
+    def reverse_range: (Integer start, Integer end_) -> self
+    def reverse_clusters: () -> self
+
+    def on_message: () { (String message) -> void } -> self
+    def diff: (Buffer other, Integer dottedcircle_glyph, Integer position_fuzz) -> Integer
+
+    def serialize: (?font: Font?, ?format: Symbol, ?flags: Integer) -> String
+    def serialize_glyphs: (?font: Font?, ?format: Symbol, ?flags: Integer) -> String
+    def serialize_unicode: (?format: Symbol, ?flags: Integer) -> String
+    def deserialize_glyphs: (String str, ?font: Font?, ?format: Symbol) -> bool
+    def deserialize_unicode: (String str, ?format: Symbol) -> bool
+
+    def inspect: () -> String
+  end
+
+  # hb_face_t wrapper
+  class Face
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: (Blob blob, ?Integer index) -> void
+    def self.for_tables: () { (Integer tag) -> Blob? } -> Face
+    def self.empty: () -> Face
+    def self.count: (Blob blob) -> Integer
+    def self.wrap_owned: (FFI::Pointer ptr) -> Face
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> Face
+
+    def index: () -> Integer
+    def index=: (Integer idx) -> void
+    def upem: () -> Integer
+    def upem=: (Integer u) -> void
+    def glyph_count: () -> Integer
+    def glyph_count=: (Integer count) -> void
+    def table_tags: () -> Array[Integer]
+    def table: (Integer tag) -> Blob
+    def reference_table: (Integer tag) -> Blob
+    def blob: () -> Blob
+    def unicodes: () -> Set
+    def nominal_glyph_mapping: () -> Map
+    def variation_selectors: () -> Set
+    def variation_unicodes: (Integer selector) -> Set
+    def immutable?: () -> bool
+    def make_immutable!: () -> self
+    def inspect: () -> String
+  end
+
+  # hb_font_t wrapper
+  class Font
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: (Face face) -> void
+    def self.empty: () -> Font
+    def self.wrap_owned: (FFI::Pointer ptr) -> Font
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> Font
+
+    def face: () -> Face
+    def scale: () -> [Integer, Integer]
+    def scale=: ([Integer, Integer] xy) -> void
+    def ppem: () -> [Integer, Integer]
+    def ppem=: ([Integer, Integer] xy) -> void
+    def ptem: () -> Float
+    def ptem=: (Float ptem) -> void
+    def synthetic_bold: () -> [Float, Float, bool]
+    def set_synthetic_bold: (Float x_embolden, Float y_embolden, bool in_place) -> void
+    def synthetic_slant: () -> Float
+    def synthetic_slant=: (Float slant) -> void
+    def variations=: (Array[Variation] variations) -> void
+    def set_variation: (Integer tag, Float value) -> void
+    def var_coords_design: () -> Array[Float]
+    def var_coords_normalized: () -> Array[Integer]
+
+    def glyph_name: (Integer glyph) -> String?
+    def glyph_from_name: (String name) -> Integer?
+    def nominal_glyph: (Integer unicode) -> Integer?
+    def nominal_glyphs: (Array[Integer] unicodes) -> Array[Integer?]
+    def glyph_h_advance: (Integer glyph) -> Integer
+    def glyph_v_advance: (Integer glyph) -> Integer
+    def glyph_h_advances: (Array[Integer] glyphs) -> Array[Integer]
+    def glyph_v_advances: (Array[Integer] glyphs) -> Array[Integer]
+    def glyph_h_origin: (Integer glyph) -> [Integer, Integer]?
+    def glyph_v_origin: (Integer glyph) -> [Integer, Integer]?
+    def glyph_extents: (Integer glyph) -> Hash[Symbol, Integer]?
+    def glyph_contour_point: (Integer glyph, Integer point_index) -> [Integer, Integer]?
+
+    def draw_glyph: (Integer glyph, DrawFuncs draw_funcs, ?untyped draw_data) -> void
+    def paint_glyph: (Integer glyph, PaintFuncs paint_funcs, ?palette_index: Integer, ?foreground: Integer) -> void
+    def funcs=: (FontFuncs funcs) -> void
+
+    def immutable?: () -> bool
+    def make_immutable!: () -> self
+    def inspect: () -> String
+  end
+
+  # hb_map_t wrapper
+  class Map
+    include Enumerable[nil]
+
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: () -> void
+    def self.empty: () -> Map
+    def self.wrap_owned: (FFI::Pointer ptr) -> Map
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> Map
+
+    def []: (Integer key) -> Integer
+    def []=: (Integer key, Integer value) -> void
+    def get: (Integer key) -> Integer
+    def set: (Integer key, Integer value) -> void
+    def has?: (Integer key) -> bool
+    def delete: (Integer key) -> void
+    def clear: () -> void
+    def is_empty?: () -> bool
+    def length: () -> Integer
+    def size: () -> Integer
+    def allocation_successful?: () -> bool
+    def each: () { ([Integer, Integer] pair) -> void } -> void
+             | () -> Enumerator[[Integer, Integer], void]
+    def to_h: () -> Hash[Integer, Integer]
+    def update: (Map other) -> void
+    def replace: (Map other) -> void
+    def ==: (untyped other) -> bool
+    def inspect: () -> String
+  end
+
+  # hb_set_t wrapper
+  class Set
+    include Enumerable[Integer]
+
+    attr_reader ptr: FFI::Pointer
+
+    HB_SET_VALUE_INVALID: Integer
+
+    def initialize: () -> void
+    def self.empty: () -> Set
+    def self.wrap_owned: (FFI::Pointer ptr) -> Set
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> Set
+
+    def add: (Integer cp) -> void
+    def add_range: (Integer first, Integer last) -> void
+    def del: (Integer cp) -> void
+    def del_range: (Integer first, Integer last) -> void
+    def has?: (Integer cp) -> bool
+    def clear: () -> void
+    def is_empty?: () -> bool
+    def length: () -> Integer
+    def size: () -> Integer
+    def allocation_successful?: () -> bool
+    def min: () -> Integer?
+    def max: () -> Integer?
+    def each: () { (Integer cp) -> void } -> void
+             | () -> Enumerator[Integer, void]
+    def each_range: () { ([Integer, Integer] range) -> void } -> void
+                  | () -> Enumerator[[Integer, Integer], void]
+    def reverse_each: () { (Integer cp) -> void } -> void
+                    | () -> Enumerator[Integer, void]
+    def to_a: () -> Array[Integer]
+    def union: (Set other) -> void
+    def intersect: (Set other) -> void
+    def subtract: (Set other) -> void
+    def symmetric_difference: (Set other) -> void
+    def subset?: (Set other) -> bool
+    def superset?: (Set other) -> bool
+    def ==: (untyped other) -> bool
+    def inspect: () -> String
+  end
+
+  # OpenType feature
+  class Feature
+    HB_FEATURE_GLOBAL_START: Integer
+    HB_FEATURE_GLOBAL_END: Integer
+
+    def initialize: (untyped struct) -> void
+    def self.from_string: (String str) -> Feature
+    def self.from_hash: (Hash[Symbol | String, bool | Integer] hash) -> Array[Feature]
+
+    def tag: () -> Integer
+    def value: () -> Integer
+    def start: () -> Integer
+    def end_index: () -> Integer
+    def to_struct: () -> untyped
+    def to_s: () -> String
+    def inspect: () -> String
+  end
+
+  # Variable font variation axis value
+  class Variation
+    def initialize: (untyped struct) -> void
+    def self.from_string: (String str) -> Variation
+
+    def tag: () -> Integer
+    def value: () -> Float
+    def to_struct: () -> untyped
+    def to_s: () -> String
+    def inspect: () -> String
+  end
+
+  # Glyph info after shaping
+  class GlyphInfo
+    def initialize: (FFI::Pointer ptr) -> void
+    def glyph_id: () -> Integer
+    def cluster: () -> Integer
+    def inspect: () -> String
+  end
+
+  # Glyph position after shaping
+  class GlyphPosition
+    def initialize: (FFI::Pointer ptr) -> void
+    def x_advance: () -> Integer
+    def y_advance: () -> Integer
+    def x_offset: () -> Integer
+    def y_offset: () -> Integer
+    def inspect: () -> String
+  end
+
+  # High-level shaping result
+  class ShapingResult
+    include Enumerable[nil]
+
+    attr_reader buffer: Buffer
+    attr_reader font: Font
+
+    def initialize: (buffer: Buffer, font: Font) -> void
+    def glyph_infos: () -> Array[GlyphInfo]
+    def glyph_positions: () -> Array[GlyphPosition]
+    def each: () { (GlyphInfo info, GlyphPosition pos) -> void } -> void
+    def length: () -> Integer
+    def size: () -> Integer
+    def total_advance: () -> [Integer, Integer]
+    def to_svg_path: () -> String
+    def inspect: () -> String
+  end
+
+  # hb_draw_funcs_t wrapper — glyph outline callbacks
+  class DrawFuncs
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: () -> void
+    def self.wrap_owned: (FFI::Pointer ptr) -> DrawFuncs
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> DrawFuncs
+
+    def on_move_to: () { (Float x, Float y, untyped draw_state) -> void } -> void
+    def on_line_to: () { (Float x, Float y, untyped draw_state) -> void } -> void
+    def on_quadratic_to: () { (Float cx, Float cy, Float x, Float y, untyped draw_state) -> void } -> void
+    def on_cubic_to: () { (Float c1x, Float c1y, Float c2x, Float c2y, Float x, Float y, untyped draw_state) -> void } -> void
+    def on_close_path: () { (untyped draw_state) -> void } -> void
+    def immutable?: () -> bool
+    def make_immutable!: () -> self
+    def inspect: () -> String
+  end
+
+  # hb_paint_funcs_t wrapper — color glyph paint callbacks
+  class PaintFuncs
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: () -> void
+    def self.wrap_owned: (FFI::Pointer ptr) -> PaintFuncs
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> PaintFuncs
+
+    def immutable?: () -> bool
+    def make_immutable!: () -> self
+    def inspect: () -> String
+  end
+
+  # hb_font_funcs_t wrapper — custom font function overrides
+  class FontFuncs
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: () -> void
+    def self.empty: () -> FontFuncs
+    def self.wrap_owned: (FFI::Pointer ptr) -> FontFuncs
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> FontFuncs
+
+    def immutable?: () -> bool
+    def make_immutable!: () -> self
+    def inspect: () -> String
+  end
+
+  # hb_unicode_funcs_t wrapper
+  class UnicodeFuncs
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: () -> void
+    def self.default: () -> UnicodeFuncs
+    def self.empty: () -> UnicodeFuncs
+    def self.wrap_owned: (FFI::Pointer ptr) -> UnicodeFuncs
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> UnicodeFuncs
+
+    def general_category: (Integer codepoint) -> Symbol
+    def combining_class: (Integer codepoint) -> Integer
+    def mirroring: (Integer codepoint) -> Integer
+    def script: (Integer codepoint) -> Integer
+    def compose: (Integer a, Integer b) -> Integer?
+    def decompose: (Integer ab) -> [Integer, Integer]?
+    def immutable?: () -> bool
+    def make_immutable!: () -> self
+    def inspect: () -> String
+  end
+
+  # hb_shape_plan_t wrapper
+  class ShapePlan
+    attr_reader ptr: FFI::Pointer
+
+    def initialize: (Face face, untyped props, ?Array[Feature] features, ?Array[String]? shapers) -> void
+    def self.create_cached: (Face face, untyped props, ?Array[Feature] features, ?Array[String]? shapers) -> ShapePlan
+    def self.empty: () -> ShapePlan
+    def self.wrap_owned: (FFI::Pointer ptr) -> ShapePlan
+    def self.wrap_borrowed: (FFI::Pointer ptr) -> ShapePlan
+
+    def execute: (Font font, Buffer buffer, ?Array[Feature] features) -> bool
+    def shaper: () -> String
+    def inspect: () -> String
+  end
+
+  # OpenType namespace
+  module OT
+    module Layout
+      def self.has_glyph_classes?: (Face face) -> bool
+      def self.glyph_class: (Face face, Integer glyph) -> Symbol
+      def self.glyphs_in_class: (Face face, Symbol klass) -> Set
+      def self.has_math_kern?: (Face face, Integer glyph, Symbol kern_type) -> bool
+      def self.script_tags: (Face face, Symbol table) -> Array[Integer]
+      def self.language_tags: (Face face, Symbol table, Integer script_index) -> Array[Integer]
+      def self.feature_tags: (Face face, Symbol table, Integer script_index, Integer language_index) -> Array[Integer]
+      def self.lookup_count: (Face face, Symbol table) -> Integer
+      def self.feature_count: (Face face, Symbol table) -> Integer
+      def self.script_count: (Face face, Symbol table) -> Integer
+      def self.tags_to_script_and_language: (Face face, Symbol table, Integer script_tag, Integer language_tag) -> [Integer, Integer]
+      def self.tag_to_script: (Integer tag) -> Integer
+      def self.tag_to_language: (Integer tag) -> Integer
+    end
+
+    module Color
+      def self.has_palettes?: (Face face) -> bool
+      def self.palette_count: (Face face) -> Integer
+      def self.color_count: (Face face) -> Integer
+      def self.palette_name_id: (Face face, Integer palette_index) -> Integer
+      def self.palette_flags: (Face face, Integer palette_index) -> Integer
+      def self.palette_colors: (Face face, Integer palette_index) -> Array[Integer]
+      def self.has_layers?: (Face face) -> bool
+      def self.glyph_layer_count: (Face face, Integer glyph) -> Integer
+      def self.glyph_layers: (Face face, Integer glyph) -> Array[Hash[Symbol, Integer]]
+      def self.has_svg?: (Face face) -> bool
+      def self.has_png?: (Face face) -> bool
+      def self.has_paint?: (Face face) -> bool
+    end
+
+    module Math
+      def self.has_data?: (Face face) -> bool
+      def self.constant: (Font font, Symbol constant) -> Integer
+      def self.glyph_italics_correction: (Font font, Integer glyph) -> Integer
+      def self.glyph_top_accent_attachment: (Font font, Integer glyph) -> Integer
+      def self.is_glyph_extended_shape: (Face face, Integer glyph) -> bool
+      def self.glyph_kerning: (Font font, Integer glyph, Symbol kern_type, Integer correction_height) -> Integer
+      def self.glyph_variant_count: (Font font, Integer glyph, Symbol direction) -> Integer
+      def self.glyph_assembly_count: (Font font, Integer glyph, Symbol direction) -> Integer
+    end
+
+    module Meta
+      def self.entry_tags: (Face face) -> Array[Integer]
+      def self.entry: (Face face, Integer tag) -> Blob
+    end
+
+    module Metrics
+      def self.x_height: (Font font, ?FFI::Pointer? language) -> Integer?
+      def self.cap_height: (Font font, ?FFI::Pointer? language) -> Integer?
+      def self.ascender: (Font font, ?FFI::Pointer? language) -> Integer?
+      def self.descender: (Font font, ?FFI::Pointer? language) -> Integer?
+      def self.underline_position: (Font font, ?FFI::Pointer? language) -> Integer?
+      def self.underline_thickness: (Font font, ?FFI::Pointer? language) -> Integer?
+      def self.strikeout_position: (Font font, ?FFI::Pointer? language) -> Integer?
+      def self.strikeout_thickness: (Font font, ?FFI::Pointer? language) -> Integer?
+      def self.variation: (Font font, Symbol metric, ?FFI::Pointer? language) -> Integer?
+      def self.x_variation: (Font font, Symbol metric) -> Integer
+      def self.y_variation: (Font font, Symbol metric) -> Integer
+    end
+
+    module Name
+      def self.name_count: (Face face) -> Integer
+      def self.name_ids: (Face face) -> Array[Integer]
+      def self.get_utf8: (Face face, Integer name_id, FFI::Pointer language) -> String?
+      def self.get_utf16: (Face face, Integer name_id, FFI::Pointer language) -> String?
+      def self.get_utf32: (Face face, Integer name_id, FFI::Pointer language) -> String?
+    end
+
+    module Shape
+      def self.glyphs_closure: (Font font, Buffer buffer, ?Array[Feature] features) -> Set
+      def self.plan_collect_lookups: (Face face, Integer script_index, Integer language_index, Integer feature_index, Symbol table) -> Set
+    end
+
+    module Var
+      def self.has_data?: (Face face) -> bool
+      def self.axis_count: (Face face) -> Integer
+      def self.axis_infos: (Face face) -> Array[Hash[Symbol, untyped]]
+      def self.find_axis_info: (Face face, Integer axis_tag) -> Hash[Symbol, untyped]?
+      def self.named_instance_count: (Face face) -> Integer
+      def self.named_instance_design_coords: (Face face, Integer instance_index) -> Array[Float]
+      def self.named_instance_named_coords: (Face face, Integer instance_index) -> Array[Integer]
+      def self.named_instance_subfamily_name_id: (Face face, Integer instance_index) -> Integer
+      def self.named_instance_postscript_name_id: (Face face, Integer instance_index) -> Integer
+      def self.normalize_variations: (Face face, Array[Variation] variations) -> Array[Integer]
+      def self.normalize_coords: (Face face, Array[Float] design_coords) -> Array[Integer]
+    end
+
+    module Font
+      def self.set_funcs: (::HarfBuzz::Font font) -> void
+    end
+  end
+
+  # Apple Advanced Typography namespace
+  module AAT
+    module Layout
+      def self.has_feature?: (Face face, Integer feature_type, Integer feature_selector) -> bool
+      def self.feature_count: (Face face) -> Integer
+      def self.feature_infos: (Face face) -> Array[Hash[Symbol, untyped]]
+      def self.language_feature_count: (Face face) -> Integer
+    end
+  end
+
+  # Font subsetting
+  module Subset
+    def self.available?: () -> bool
+    def self.subset: (::HarfBuzz::Face face, Input input) -> ::HarfBuzz::Face
+
+    class Input
+      attr_reader ptr: FFI::Pointer
+
+      def initialize: () -> void
+      def unicode_set: () -> ::HarfBuzz::Set
+      def glyph_set: () -> ::HarfBuzz::Set
+      def flags: () -> Integer
+      def flags=: (Integer flags) -> void
+      def inspect: () -> String
+    end
+
+    class Plan
+      attr_reader ptr: FFI::Pointer
+
+      def initialize: (::HarfBuzz::Face face, Input input) -> void
+      def execute: () -> ::HarfBuzz::Face
+      def old_to_new_glyph_mapping: () -> ::HarfBuzz::Map
+      def new_to_old_glyph_mapping: () -> ::HarfBuzz::Map
+      def unicode_to_old_glyph_mapping: () -> ::HarfBuzz::Map
+      def inspect: () -> String
+    end
+  end
 end
+
+# Compatibility alias
+Harfbuzz = HarfBuzz
