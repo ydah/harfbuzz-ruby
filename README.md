@@ -1,4 +1,4 @@
-# HarfBuzz Ruby
+# HarfBuzz Ruby [![Gem Version](https://badge.fury.io/rb/harfbuzz-ruby.svg)](https://badge.fury.io/rb/harfbuzz-ruby) [![CI](https://github.com/ydah/harfbuzz-ruby/actions/workflows/main.yml/badge.svg)](https://github.com/ydah/harfbuzz-ruby/actions/workflows/main.yml)
 
 Ruby bindings for [HarfBuzz](https://harfbuzz.github.io/) text shaping engine.
 
