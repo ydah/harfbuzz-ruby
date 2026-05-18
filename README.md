@@ -97,10 +97,10 @@ buffer.guess_segment_properties
 # Shape
 HarfBuzz.shape(font, buffer)
 
-# Read results
-buffer.glyph_infos.zip(buffer.glyph_positions).each do |info, pos|
-  puts "glyph_id=#{info.glyph_id} cluster=#{info.cluster} " \
-       "x_advance=#{pos.x_advance} x_offset=#{pos.x_offset}"
+# Read results without allocating GlyphInfo/GlyphPosition wrappers
+buffer.each do |glyph_id, cluster, x_advance, _y_advance, x_offset, _y_offset|
+  puts "glyph_id=#{glyph_id} cluster=#{cluster} " \
+       "x_advance=#{x_advance} x_offset=#{x_offset}"
 end
 ```
 

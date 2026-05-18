@@ -295,6 +295,56 @@ RSpec.describe HarfBuzz::Buffer do
     end
   end
 
+  describe "#each" do
+    before do
+      blob = HarfBuzz::Blob.from_file!(system_font_path)
+      face = HarfBuzz::Face.new(blob, 0)
+      font = HarfBuzz::Font.new(face)
+      buffer.add_utf8("Hi")
+      buffer.guess_segment_properties
+      HarfBuzz.shape(font, buffer)
+    end
+
+    it "is Enumerable" do
+      expect(buffer).to be_a(Enumerable)
+    end
+
+    it "returns an Enumerator when no block is given" do
+      enum = buffer.each
+
+      expect(enum).to be_a(Enumerator)
+      expect(enum.size).to eq(buffer.length)
+    end
+
+    it "yields glyph data matching glyph_infos and glyph_positions" do
+      expected = buffer.glyph_infos.zip(buffer.glyph_positions).map do |info, position|
+        [
+          info.glyph_id,
+          info.cluster,
+          position.x_advance,
+          position.y_advance,
+          position.x_offset,
+          position.y_offset
+        ]
+      end
+
+      yielded = []
+      result = buffer.each { |*glyph| yielded << glyph }
+
+      expect(result).to be(buffer)
+      expect(yielded).to eq(expected)
+      expect(yielded).not_to be_empty
+      yielded.flatten.each { |value| expect(value).to be_an(Integer) }
+    end
+
+    it "does not instantiate glyph wrapper objects while iterating" do
+      expect(HarfBuzz::GlyphInfo).not_to receive(:new)
+      expect(HarfBuzz::GlyphPosition).not_to receive(:new)
+
+      buffer.each { |_glyph_id, _cluster, _x_advance, _y_advance, _x_offset, _y_offset| }
+    end
+  end
+
   describe "#reverse / #reverse_clusters / #reverse_range" do
     it "#reverse reverses buffer contents" do
       buffer.add_utf8("ABC")
