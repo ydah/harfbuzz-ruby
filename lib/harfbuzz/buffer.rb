@@ -3,6 +3,23 @@
 module HarfBuzz
   # Wraps hb_buffer_t — text buffer for shaping
   class Buffer
+    GLYPH_INFO_SIZE = C::HbGlyphInfoT.size
+    GLYPH_INFO_CODEPOINT_OFFSET = C::HbGlyphInfoT.offset_of(:codepoint)
+    GLYPH_INFO_CLUSTER_OFFSET = C::HbGlyphInfoT.offset_of(:cluster)
+    GLYPH_POSITION_SIZE = C::HbGlyphPositionT.size
+    GLYPH_POSITION_X_ADVANCE_OFFSET = C::HbGlyphPositionT.offset_of(:x_advance)
+    GLYPH_POSITION_Y_ADVANCE_OFFSET = C::HbGlyphPositionT.offset_of(:y_advance)
+    GLYPH_POSITION_X_OFFSET_OFFSET = C::HbGlyphPositionT.offset_of(:x_offset)
+    GLYPH_POSITION_Y_OFFSET_OFFSET = C::HbGlyphPositionT.offset_of(:y_offset)
+    private_constant :GLYPH_INFO_SIZE,
+                     :GLYPH_INFO_CODEPOINT_OFFSET,
+                     :GLYPH_INFO_CLUSTER_OFFSET,
+                     :GLYPH_POSITION_SIZE,
+                     :GLYPH_POSITION_X_ADVANCE_OFFSET,
+                     :GLYPH_POSITION_Y_ADVANCE_OFFSET,
+                     :GLYPH_POSITION_X_OFFSET_OFFSET,
+                     :GLYPH_POSITION_Y_OFFSET_OFFSET
+
     attr_reader :ptr
 
     # Creates a new empty buffer
@@ -308,6 +325,40 @@ module HarfBuzz
       count.times.map do |i|
         GlyphPosition.new(positions_ptr + (i * C::HbGlyphPositionT.size))
       end
+    end
+
+    # Iterates over shaped glyph data without allocating GlyphInfo/GlyphPosition objects
+    # @yield [glyph_id, cluster, x_advance, y_advance, x_offset, y_offset]
+    # @return [Enumerator, self]
+    def each_glyph
+      return enum_for(__method__) { length } unless block_given?
+
+      info_length_ptr = FFI::MemoryPointer.new(:uint)
+      infos_ptr = C.hb_buffer_get_glyph_infos(@ptr, info_length_ptr)
+      position_length_ptr = FFI::MemoryPointer.new(:uint)
+      positions_ptr = C.hb_buffer_get_glyph_positions(@ptr, position_length_ptr)
+
+      return self if infos_ptr.null? || positions_ptr.null?
+
+      count = [info_length_ptr.read_uint, position_length_ptr.read_uint].min
+      return self if count.zero?
+
+      i = 0
+      while i < count
+        info_offset = i * GLYPH_INFO_SIZE
+        position_offset = i * GLYPH_POSITION_SIZE
+
+        yield infos_ptr.get_uint32(info_offset + GLYPH_INFO_CODEPOINT_OFFSET),
+              infos_ptr.get_uint32(info_offset + GLYPH_INFO_CLUSTER_OFFSET),
+              positions_ptr.get_int32(position_offset + GLYPH_POSITION_X_ADVANCE_OFFSET),
+              positions_ptr.get_int32(position_offset + GLYPH_POSITION_Y_ADVANCE_OFFSET),
+              positions_ptr.get_int32(position_offset + GLYPH_POSITION_X_OFFSET_OFFSET),
+              positions_ptr.get_int32(position_offset + GLYPH_POSITION_Y_OFFSET_OFFSET)
+
+        i += 1
+      end
+
+      self
     end
 
     # @return [Boolean] true if the buffer has glyph position data
