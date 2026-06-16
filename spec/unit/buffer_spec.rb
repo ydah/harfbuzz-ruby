@@ -342,19 +342,7 @@ RSpec.describe HarfBuzz::Buffer do
 
     it "yields the next distinct cluster for glyphs in the same cluster" do
       raw_buffer = described_class.new
-      raw_buffer.add(0x41, 0)
-      raw_buffer.add(0x42, 0)
-      raw_buffer.add(0x43, 3)
-      raw_buffer.add(0x44, 3)
-      raw_buffer.add(0x45, 5)
-      raw_buffer.direction = :ltr
-      raw_buffer.script = HarfBuzz.tag("Latn")
-      raw_buffer.language = HarfBuzz.language("en")
-
-      blob = HarfBuzz::Blob.from_file!(system_font_path)
-      face = HarfBuzz::Face.new(blob, 0)
-      font = HarfBuzz::Font.new(face)
-      HarfBuzz.shape(font, raw_buffer)
+      raw_buffer.deserialize_glyphs("[1=0+100|2=0+100|3=3+100|4=3+100|5=5+100]")
 
       expect(raw_buffer.each_glyph.map { |_glyph_id, _cluster, next_cluster, *_position| next_cluster })
         .to eq([3, 3, 5, 5, nil])
