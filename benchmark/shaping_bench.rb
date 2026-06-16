@@ -63,16 +63,37 @@ Benchmark.ips do |x|
   x.report("iterate glyph wrappers") do
     total = 0
     infos = iteration_buffer.glyph_infos
-    clusters = infos.map(&:cluster)
-    infos.zip(iteration_buffer.glyph_positions).each_with_index do |(info, position), index|
-      next_cluster = clusters[(index + 1)..]&.find { |cluster| cluster != info.cluster }
-      total += info.glyph_id
-      total += info.cluster
-      total += next_cluster || 0
-      total += position.x_advance
-      total += position.y_advance
-      total += position.x_offset
-      total += position.y_offset
+    positions = iteration_buffer.glyph_positions
+    count = [infos.length, positions.length].min
+
+    i = 0
+    while i < count
+      cluster = infos[i].cluster
+      next_cluster = nil
+      next_run_index = i + 1
+
+      while next_run_index < count
+        candidate_cluster = infos[next_run_index].cluster
+        if candidate_cluster != cluster
+          next_cluster = candidate_cluster
+          break
+        end
+
+        next_run_index += 1
+      end
+
+      while i < next_run_index
+        info = infos[i]
+        position = positions[i]
+        total += info.glyph_id
+        total += cluster
+        total += next_cluster || 0
+        total += position.x_advance
+        total += position.y_advance
+        total += position.x_offset
+        total += position.y_offset
+        i += 1
+      end
     end
     total
   end
