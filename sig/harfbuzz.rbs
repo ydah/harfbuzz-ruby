@@ -140,8 +140,8 @@ module HarfBuzz
 
     def glyph_infos: () -> Array[GlyphInfo]
     def glyph_positions: () -> Array[GlyphPosition]
-    def each_glyph: () { (Integer glyph_id, Integer cluster, Integer x_advance, Integer y_advance, Integer x_offset, Integer y_offset) -> void } -> self
-                  | () -> Enumerator[[Integer, Integer, Integer, Integer, Integer, Integer], self]
+    def each_glyph: () { (Integer glyph_id, Integer cluster, Integer? next_cluster, Integer x_advance, Integer y_advance, Integer x_offset, Integer y_offset) -> void } -> self
+                  | () -> Enumerator[[Integer, Integer, Integer?, Integer, Integer, Integer, Integer], self]
     def has_positions?: () -> bool
 
     def normalize_glyphs: () -> self

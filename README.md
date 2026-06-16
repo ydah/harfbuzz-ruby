@@ -90,19 +90,25 @@ face = HarfBuzz::Face.new(blob, 0)
 font = HarfBuzz::Font.new(face)
 
 # Create buffer and add text
+text = "Hello, World!"
 buffer = HarfBuzz::Buffer.new
-buffer.add_utf8("Hello, World!")
+buffer.add_utf8(text)
 buffer.guess_segment_properties
 
 # Shape
 HarfBuzz.shape(font, buffer)
 
 # Read results without allocating GlyphInfo/GlyphPosition wrappers
-buffer.each_glyph do |glyph_id, cluster, x_advance, _y_advance, x_offset, _y_offset|
-  puts "glyph_id=#{glyph_id} cluster=#{cluster} " \
+last_cluster = nil
+buffer.each_glyph do |glyph_id, cluster, next_cluster, x_advance, _y_advance, x_offset, _y_offset|
+  source = cluster == last_cluster ? "" : text.byteslice(cluster...(next_cluster || text.bytesize))
+  puts "glyph_id=#{glyph_id} source=#{source.inspect} cluster=#{cluster} next_cluster=#{next_cluster} " \
        "x_advance=#{x_advance} x_offset=#{x_offset}"
+  last_cluster = cluster
 end
 ```
+
+`next_cluster` is the next distinct cluster in glyph order, or `nil` for the last cluster.
 
 ### Shaping with Features
 

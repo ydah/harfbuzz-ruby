@@ -313,10 +313,14 @@ RSpec.describe HarfBuzz::Buffer do
     end
 
     it "yields glyph data matching glyph_infos and glyph_positions" do
-      expected = buffer.glyph_infos.zip(buffer.glyph_positions).map do |info, position|
+      infos = buffer.glyph_infos
+      clusters = infos.map(&:cluster)
+      expected = infos.zip(buffer.glyph_positions).each_with_index.map do |(info, position), index|
+        next_cluster = clusters[(index + 1)..]&.find { |cluster| cluster != info.cluster }
         [
           info.glyph_id,
           info.cluster,
+          next_cluster,
           position.x_advance,
           position.y_advance,
           position.x_offset,
@@ -330,14 +334,40 @@ RSpec.describe HarfBuzz::Buffer do
       expect(result).to be(buffer)
       expect(yielded).to eq(expected)
       expect(yielded).not_to be_empty
-      yielded.flatten.each { |value| expect(value).to be_an(Integer) }
+      yielded.each do |glyph|
+        expect(glyph[2]).to be_nil.or be_an(Integer)
+        (glyph[0..1] + glyph[3..]).each { |value| expect(value).to be_an(Integer) }
+      end
+    end
+
+    it "yields the next distinct cluster for glyphs in the same cluster" do
+      raw_buffer = described_class.new
+      raw_buffer.deserialize_glyphs("[1=0+100|2=0+100|3=3+100|4=3+100|5=5+100]")
+
+      expect(raw_buffer.each_glyph.map { |_glyph_id, _cluster, next_cluster, *_position| next_cluster })
+        .to eq([3, 3, 5, 5, nil])
+    end
+
+    it "supports source string reconstruction from cluster ranges" do
+      text = "abcde"
+      raw_buffer = described_class.new
+      raw_buffer.deserialize_glyphs("[1=0+100|2=0+100|3=3+100|4=3+100]")
+
+      slices = []
+      last_cluster = nil
+      raw_buffer.each_glyph do |_glyph_id, cluster, next_cluster, *_position|
+        slices << (cluster == last_cluster ? "" : text.byteslice(cluster...(next_cluster || text.bytesize)))
+        last_cluster = cluster
+      end
+
+      expect(slices).to eq(["abc", "", "de", ""])
     end
 
     it "does not instantiate glyph wrapper objects while iterating" do
       expect(HarfBuzz::GlyphInfo).not_to receive(:new)
       expect(HarfBuzz::GlyphPosition).not_to receive(:new)
 
-      buffer.each_glyph { |_glyph_id, _cluster, _x_advance, _y_advance, _x_offset, _y_offset| }
+      buffer.each_glyph { |_glyph_id, _cluster, _next_cluster, _x_advance, _y_advance, _x_offset, _y_offset| }
     end
   end
 

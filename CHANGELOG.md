@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+- Add `Buffer#each_glyph` support for yielding the next distinct cluster.
+
 ## v1.0.0 (2026-02-27)
 
 - Initial release.
