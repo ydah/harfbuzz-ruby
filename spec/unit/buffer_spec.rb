@@ -348,6 +348,21 @@ RSpec.describe HarfBuzz::Buffer do
         .to eq([3, 3, 5, 5, nil])
     end
 
+    it "supports source string reconstruction from cluster ranges" do
+      text = "abcde"
+      raw_buffer = described_class.new
+      raw_buffer.deserialize_glyphs("[1=0+100|2=0+100|3=3+100|4=3+100]")
+
+      slices = []
+      last_cluster = nil
+      raw_buffer.each_glyph do |_glyph_id, cluster, next_cluster, *_position|
+        slices << (cluster == last_cluster ? "" : text.byteslice(cluster...(next_cluster || text.bytesize)))
+        last_cluster = cluster
+      end
+
+      expect(slices).to eq(["abc", "", "de", ""])
+    end
+
     it "does not instantiate glyph wrapper objects while iterating" do
       expect(HarfBuzz::GlyphInfo).not_to receive(:new)
       expect(HarfBuzz::GlyphPosition).not_to receive(:new)
