@@ -98,11 +98,13 @@ buffer.guess_segment_properties
 HarfBuzz.shape(font, buffer)
 
 # Read results without allocating GlyphInfo/GlyphPosition wrappers
-buffer.each_glyph do |glyph_id, cluster, x_advance, _y_advance, x_offset, _y_offset|
-  puts "glyph_id=#{glyph_id} cluster=#{cluster} " \
+buffer.each_glyph do |glyph_id, cluster, next_cluster, x_advance, _y_advance, x_offset, _y_offset|
+  puts "glyph_id=#{glyph_id} cluster=#{cluster} next_cluster=#{next_cluster} " \
        "x_advance=#{x_advance} x_offset=#{x_offset}"
 end
 ```
+
+`next_cluster` is the next distinct cluster in glyph order, or `nil` for the last cluster.
 
 ### Shaping with Features
 

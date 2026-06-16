@@ -328,7 +328,7 @@ module HarfBuzz
     end
 
     # Iterates over shaped glyph data without allocating GlyphInfo/GlyphPosition objects
-    # @yield [glyph_id, cluster, x_advance, y_advance, x_offset, y_offset]
+    # @yield [glyph_id, cluster, next_cluster, x_advance, y_advance, x_offset, y_offset]
     # @return [Enumerator, self]
     def each_glyph
       return enum_for(__method__) { length } unless block_given?
@@ -346,16 +346,35 @@ module HarfBuzz
       i = 0
       while i < count
         info_offset = i * GLYPH_INFO_SIZE
-        position_offset = i * GLYPH_POSITION_SIZE
+        cluster = infos_ptr.get_uint32(info_offset + GLYPH_INFO_CLUSTER_OFFSET)
+        next_cluster = nil
 
-        yield infos_ptr.get_uint32(info_offset + GLYPH_INFO_CODEPOINT_OFFSET),
-              infos_ptr.get_uint32(info_offset + GLYPH_INFO_CLUSTER_OFFSET),
-              positions_ptr.get_int32(position_offset + GLYPH_POSITION_X_ADVANCE_OFFSET),
-              positions_ptr.get_int32(position_offset + GLYPH_POSITION_Y_ADVANCE_OFFSET),
-              positions_ptr.get_int32(position_offset + GLYPH_POSITION_X_OFFSET_OFFSET),
-              positions_ptr.get_int32(position_offset + GLYPH_POSITION_Y_OFFSET_OFFSET)
+        next_run_index = i + 1
+        while next_run_index < count
+          next_cluster_offset = (next_run_index * GLYPH_INFO_SIZE) + GLYPH_INFO_CLUSTER_OFFSET
+          candidate_cluster = infos_ptr.get_uint32(next_cluster_offset)
+          if candidate_cluster != cluster
+            next_cluster = candidate_cluster
+            break
+          end
 
-        i += 1
+          next_run_index += 1
+        end
+
+        while i < next_run_index
+          info_offset = i * GLYPH_INFO_SIZE
+          position_offset = i * GLYPH_POSITION_SIZE
+
+          yield infos_ptr.get_uint32(info_offset + GLYPH_INFO_CODEPOINT_OFFSET),
+                cluster,
+                next_cluster,
+                positions_ptr.get_int32(position_offset + GLYPH_POSITION_X_ADVANCE_OFFSET),
+                positions_ptr.get_int32(position_offset + GLYPH_POSITION_Y_ADVANCE_OFFSET),
+                positions_ptr.get_int32(position_offset + GLYPH_POSITION_X_OFFSET_OFFSET),
+                positions_ptr.get_int32(position_offset + GLYPH_POSITION_Y_OFFSET_OFFSET)
+
+          i += 1
+        end
       end
 
       self
